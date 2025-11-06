@@ -14,6 +14,7 @@ Implement a CMS integration solution for Plasmic that allows embedding the web b
 - **URL Format**: `http://localhost:3003/p/{projectId}?token={jwtToken}` is the correct format to open a specific project
 - **Seeding**: The database seed script `yarn seed` populates the database with test users, projects, and feature tiers
 - **API Endpoints**: `/api/v1/cms-integration/generate-token` for JWT token generation, `/api/v1/user/projects` for user project listing
+- **Commands**: Use `cd platform/wab && yarn dev` to start the development server that runs all three services
 
 ## Recent Actions
 - Resolved Node.js version compatibility issues by switching to v21.5.0
@@ -28,6 +29,7 @@ Implement a CMS integration solution for Plasmic that allows embedding the web b
 - Fixed project opening functionality to properly load specific projects in the builder
 - Removed problematic UI elements that interfered with builder loading
 - Ensured proper fallback functionality for demo projects
+- All services are currently running and accessible via browser
 
 ## Current Plan
 1. [DONE] Set up PostgreSQL database with correct user and database
@@ -50,8 +52,9 @@ Implement a CMS integration solution for Plasmic that allows embedding the web b
 18. [DONE] Ensure proper fallback functionality for demo projects
 19. [DONE] Close development server and clean up memory
 20. [DONE] Complete the project and provide comprehensive documentation
+21. [DONE] Run the project successfully with all services operational
 
 ---
 
 ## Summary Metadata
-**Update time**: 2025-11-04T16:48:06.700Z 
+**Update time**: 2025-11-06T20:16:19.797Z 
