@@ -21,7 +21,7 @@ import { setupPassport } from "@/wab/server/auth/passport-cfg";
 import * as authRoutes from "@/wab/server/auth/routes";
 import { apiAuth } from "@/wab/server/auth/routes";
 import { doLogout } from "@/wab/server/auth/util";
-import { jwtAuthMiddleware, skipCsrfForJwt } from "@/wab/server/auth/jwt-auth";
+import { jwtAuthMiddleware, skipCsrfForJwt, skipCsrfForCmsApiKey } from "@/wab/server/auth/jwt-auth";
 import { Config } from "@/wab/server/config";
 import { DbMgr, SUPER_USER } from "@/wab/server/db/DbMgr";
 import { getDevFlagsMergedWithOverrides } from "@/wab/server/db/appconfig";
@@ -80,6 +80,16 @@ import {
   updateTable,
 } from "@/wab/server/routes/cmse";
 import { addCommentsRoutes } from "@/wab/server/routes/comments";
+import {
+  cmsGenerateToken,
+  cmsGenerateTokenPublic,
+  cmsVerifyUser,
+  cmsGetCurrentUser,
+} from "@/wab/server/routes/cms-integration";
+import {
+  getUserProjects,
+  getUserProject,
+} from "@/wab/server/routes/user-projects";
 import {
   ROUTES_WITH_TIMING,
   addInternalRoutes,
@@ -316,6 +326,7 @@ const csrfFreeStaticRoutes = [
   "/api/v1/socket/",
   "/api/v1/init-token/",
   "/api/v1/promo-code/",
+  "/api/v1/cms-integration/",
 
   // csrf-free routes to the socket server routes, if socket server
   // is not running and the routes are mounted on this server
@@ -326,7 +337,7 @@ const csrfFreeStaticRoutes = [
 
 const isCsrfFreeRoute = (pathname: string, config: Config) => {
   return (
-    csrfFreeStaticRoutes.includes(pathname) ||
+    csrfFreeStaticRoutes.some(route => pathname.startsWith(route)) ||
     pathname.includes("/api/v1/clip/") ||
     pathname.includes("/code/") ||
     pathname.includes("/api/v1/loader/code") ||
@@ -642,6 +653,8 @@ function addMiddlewares(
   if (!opts?.skipSession) {
     // Middleware to skip CSRF when JWT token is present
     app.use(safeCast<RequestHandler>(skipCsrfForJwt));
+    // Middleware to skip CSRF when CMS integration API key is present
+    app.use(safeCast<RequestHandler>(skipCsrfForCmsApiKey));
     const csrf = lusca.csrf();
     app.use((req, res, next) => {
       if (
@@ -1828,6 +1841,19 @@ export function addMainAppServerRoutes(
    * End user management
    */
   addEndUserManagementRoutes(app);
+
+  /**
+   * CMS Integration routes
+   */
+  app.post("/api/v1/cms-integration/generate-token", withNext(cmsGenerateTokenPublic));
+  app.post("/api/v1/cms-integration/verify-user", safeCast<RequestHandler>(authRoutes.teamApiUserAuth), withNext(cmsVerifyUser));
+  app.get("/api/v1/cms-integration/current-user", jwtAuthMiddleware, withNext(cmsGetCurrentUser));
+
+  /**
+   * User Projects routes
+   */
+  app.get("/api/v1/user/projects", jwtAuthMiddleware, withNext(getUserProjects));
+  app.get("/api/v1/user/projects/:projectId", jwtAuthMiddleware, withNext(getUserProject));
 
   if (typeof jest === "undefined") {
     // Do not create the interval in unit tests, because it keeps running and

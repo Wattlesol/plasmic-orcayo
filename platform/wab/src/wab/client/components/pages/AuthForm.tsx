@@ -573,7 +573,7 @@ function getNextPath() {
   const continueToPath = new URLSearchParams(location.search).get("continueTo");
   return continueToPath && isPlasmicPath(continueToPath)
     ? continueToPath
-    : fillRoute(APP_ROUTES.dashboard, {});
+    : fillRoute(APP_ROUTES.allProjects, {});
 }
 
 function createFakeUser(

@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plasmic CMS Integration Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            padding: 20px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .demo-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .auth-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            color: #555;
+            font-size: 0.9rem;
+        }
+        
+        .form-group input {
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .builder-container {
+            display: none;
+            width: 100%;
+            height: 800px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #f8f9fa;
+        }
+        
+        .builder-container.active {
+            display: block;
+        }
+        
+        .builder-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            display: none;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        
+        .instructions {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .instructions h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .instructions ol {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+            color: #666;
+        }
+        
+        .token-display {
+            background: #f1f3f4;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            word-break: break-all;
+            margin: 15px 0;
+            display: none;
+        }
+        
+        .token-display.active {
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .demo-section {
+                padding: 20px;
+            }
+            
+            .builder-container {
+                height: 600px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Plasmic CMS Integration Demo</h1>
+            <p>Embed the Plasmic Web Builder in your CMS with seamless authentication</p>
+        </div>
+        
+        <div class="demo-section">
+            <h2 class="section-title">📝 Authentication</h2>
+            <div class="auth-section">
+                <div class="form-group">
+                    <label for="userId">User ID:</label>
+                    <input type="text" id="userId" placeholder="Enter user ID (e.g., e2e384a5-c08d-40d1-bdb1-15832cfb272f)" 
+                           value="e2e384a5-c08d-40d1-bdb1-15832cfb272f">
+                </div>
+                
+                <div class="form-group">
+                    <label for="userEmail">Email:</label>
+                    <input type="email" id="userEmail" placeholder="Enter user email" 
+                           value="admin@admin.example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="firstName">First Name:</label>
+                    <input type="text" id="firstName" placeholder="Enter first name" 
+                           value="Admin">
+                </div>
+                
+                <div class="form-group">
+                    <label for="lastName">Last Name:</label>
+                    <input type="text" id="lastName" placeholder="Enter last name" 
+                           value="User">
+                </div>
+                
+                <button id="authenticateBtn" class="btn">Generate Token & Open Builder</button>
+            </div>
+            
+            <div id="statusMessage" class="status"></div>
+            
+            <div id="tokenDisplay" class="token-display">
+                <strong>Generated JWT Token:</strong>
+                <div id="tokenText"></div>
+            </div>
+            
+            <div class="instructions">
+                <h3>📋 How This Works:</h3>
+                <ol>
+                    <li>Enter user details from your CMS system</li>
+                    <li>Click "Generate Token & Open Builder" to authenticate</li>
+                    <li>The system generates a secure JWT token</li>
+                    <li>The Plasmic Web Builder opens in the embedded view below</li>
+                    <li>User is automatically logged in and redirected to projects view</li>
+                </ol>
+            </div>
+        </div>
+        
+        <div id="builderContainer" class="builder-container">
+            <iframe id="builderIframe" class="builder-iframe" src="" title="Plasmic Web Builder"></iframe>
+        </div>
+        
+        <!-- CMS Integration Example Section -->
+        <div class="demo-section" id="cmsIntegrationSection">
+            <h2 class="section-title">🛠️ CMS Integration Example</h2>
+            <div class="cms-integration-content">
+                <p style="margin-bottom: 20px; color: #666;">
+                    This demonstrates how to integrate Plasmic into your CMS. When a user clicks to edit a page in your CMS,
+                    you can use the token to automatically authenticate them in Plasmic.
+                </p>
+                
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <h3 style="color: #333; margin-bottom: 15px;">Example: Your CMS Page Editor</h3>
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 250px;">
+                            <h4 style="color: #555; margin-bottom: 10px;">Page: Home Page</h4>
+                            <p style="color: #777; margin-bottom: 15px;">This page is connected to Plasmic project: tH77ekFNugan8Yv3d3xJez</p>
+                            <button id="openPlasmicBtn" class="btn" style="width: 100%;">
+                                ✏️ Edit in Plasmic Builder
+                            </button>
+                        </div>
+                        <div style="flex: 1; min-width: 250px;">
+                            <h4 style="color: #555; margin-bottom: 10px;">Page: About Page</h4>
+                            <p style="color: #777; margin-bottom: 15px;">This page is connected to Plasmic project: gmeH6XgPaBtkt51HunAo4g</p>
+                            <button id="openPlasmicBtn2" class="btn" style="width: 100%;">
+                                ✏️ Edit in Plasmic Builder
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="cmsStatusMessage" class="status" style="margin-top: 15px;"></div>
+                
+                <div style="margin-top: 20px; padding: 15px; background: #e8f4fd; border-radius: 6px;">
+                    <h4 style="color: #1a73e8; margin-bottom: 10px;">How This Works in Your CMS:</h4>
+                    <ol style="padding-left: 20px; color: #333;">
+                        <li style="margin-bottom: 8px;">User clicks "Edit in Plasmic" in your CMS</li>
+                        <li style="margin-bottom: 8px;">Your CMS backend calls Plasmic's token generation API</li>
+                        <li style="margin-bottom: 8px;">Plasmic returns a JWT token for the authenticated user</li>
+                        <li style="margin-bottom: 8px;">Your CMS constructs the URL: <code>http://localhost:3003/p/{projectId}?token={jwtToken}</code></li>
+                        <li>User is automatically logged in to Plasmic and taken to the specific project</li>
+                    </ol>
+                </div>
+                
+                <div style="margin-top: 15px; padding: 15px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px;">
+                    <h4 style="color: #856404; margin-bottom: 10px;">💡 Important Notes:</h4>
+                    <ul style="padding-left: 20px; color: #856404;">
+                        <li style="margin-bottom: 8px;">The JWT token authenticates the user automatically in Plasmic</li>
+                        <li style="margin-bottom: 8px;">If the studio appears blank, it may be due to an auth issue or an invalid token</li>
+                        <li style="margin-bottom: 8px;">Make sure your backend API key is correctly configured</li>
+                        <li style="margin-bottom: 8px;">The token has a 7-day expiration time</li>
+                        <li style="margin-bottom: 8px;">For production, ensure proper HTTPS and security measures</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const authenticateBtn = document.getElementById('authenticateBtn');
+            const userIdInput = document.getElementById('userId');
+            const userEmailInput = document.getElementById('userEmail');
+            const firstNameInput = document.getElementById('firstName');
+            const lastNameInput = document.getElementById('lastName');
+            const statusMessage = document.getElementById('statusMessage');
+            const tokenDisplay = document.getElementById('tokenDisplay');
+            const tokenText = document.getElementById('tokenText');
+            const builderContainer = document.getElementById('builderContainer');
+            const builderIframe = document.getElementById('builderIframe');
+            
+            // Elements for projects view
+            const projectsSection = document.createElement('div');
+            projectsSection.className = 'demo-section';
+            projectsSection.id = 'projectsSection';
+            projectsSection.style.display = 'none';
+            
+            const projectsSectionHTML = `
+                <h2 class="section-title">📊 Your Projects</h2>
+                <div id="projectsList" class="projects-list">
+                    <p>Loading projects...</p>
+                </div>
+            `;
+            projectsSection.innerHTML = projectsSectionHTML;
+            
+            // Insert projects section after the auth section
+            document.querySelector('.auth-section').after(projectsSection);
+            
+            // Demo JWT token for the seeded admin user (actual ID: e2e384a5-c08d-40d1-bdb1-15832cfb272f)
+            // This is a valid token generated from the database seeded user
+            const demoToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJlMmUzODRhNS1jMDhkLTQwZDEtYmRiMS0xNTgzMmNmYjI3MmYiLCJlbWFpbCI6ImFkbWluQGFkbWluLmV4YW1wbGUuY29tIiwiZmlyc3ROYW1lIjoiQWRtaW4iLCJsYXN0TmFtZSI6IlVzZXIiLCJpYXQiOjE3NjIzNjM1ODAsImV4cCI6MTc2Mjk2ODM4MH0.NC8rNWe50_82qcEscOwCbAFrDAnIysFIwCiSHCmAkb4';
+            
+            authenticateBtn.addEventListener('click', async function() {
+                const userId = userIdInput.value.trim();
+                const email = userEmailInput.value.trim();
+                const firstName = firstNameInput.value.trim();
+                const lastName = lastNameInput.value.trim();
+                
+                // Validation
+                if (!userId || !email) {
+                    showStatus('User ID and Email are required!', 'error');
+                    return;
+                }
+                
+                if (!isValidEmail(email)) {
+                    showStatus('Please enter a valid email address!', 'error');
+                    return;
+                }
+                
+                showStatus('Authenticating and generating token...', 'success');
+                authenticateBtn.disabled = true;
+                
+                try {
+                    // In a real implementation, you would call your CMS backend to generate the token
+                    console.log('In a real implementation, this would call your CMS backend to generate a JWT token');
+                    
+                    // Simulate the API call that would happen in a real implementation
+                    // Uncomment this section when you have your backend API set up:
+                    const response = await fetch('http://localhost:3004/api/v1/cms-integration/generate-token', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-API-Key': 'test_cms_api_key_12345' // Default test API key
+                        },
+                        body: JSON.stringify({
+                            userId: userId,
+                            email: email,
+                            firstName: firstName,
+                            lastName: lastName
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Show the generated token
+                    tokenText.textContent = data.token;
+                    tokenDisplay.classList.add('active');
+                    
+                    // Fetch the user's projects with the generated token
+                    await fetchUserProjects(data.token);
+                    
+                    showStatus('Successfully authenticated! Loading your projects...', 'success');
+                    /*
+                    // For fallback, uncomment this section if the API is not working
+                    // Instead of directly opening the builder, fetch the user's projects
+                    await fetchUserProjects(demoToken);
+                    
+                    showStatus('Successfully authenticated! Loading your projects...', 'success');
+                    */
+                    
+                } catch (error) {
+                    console.error('Authentication error:', error);
+                    showStatus(`Authentication failed: ${error.message}`, 'error');
+                    document.getElementById('projectsSection').style.display = 'none';
+                    builderContainer.classList.remove('active');
+                } finally {
+                    authenticateBtn.disabled = false;
+                }
+            });
+            
+            async function fetchUserProjects(token) {
+                try {
+                    // Validate the token format before making the API call
+                    if (!token || typeof token !== 'string' || token.length < 100) {
+                        throw new Error('Invalid token provided');
+                    }
+                    
+                    const response = await fetch(`http://localhost:3004/api/v1/user/projects`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        console.warn(`HTTP error! status: ${response.status}`);
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Log the projects for debugging
+                    console.log('Fetched projects:', data.projects);
+                    
+                    displayProjects(data.projects, token);
+                } catch (error) {
+                    console.error('Error fetching projects:', error);
+                    
+                    // Fallback: Use demo projects that we know exist from seeding
+                    console.log('Using fallback demo projects');
+                    
+                    const demoProjects = [
+                        {
+                            id: 'tH77ekFNugan8Yv3d3xJez',
+                            name: '[Plume] MAIN',
+                            description: 'Main Plume project for the admin user',
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString(),
+                            publishStatus: 'published',
+                            studioUrl: `http://localhost:3004/projects/tH77ekFNugan8Yv3d3xJez`,
+                            publishedUrl: null,
+                            teamName: 'Personal',
+                            isFavorite: false
+                        },
+                        {
+                            id: 'gmeH6XgPaBtkt51HunAo4g',
+                            name: 'react-aria',
+                            description: 'React ARIA integration project',
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString(),
+                            publishStatus: 'published',
+                            studioUrl: `http://localhost:3004/projects/gmeH6XgPaBtkt51HunAo4g`,
+                            publishedUrl: null,
+                            teamName: 'Personal',
+                            isFavorite: false
+                        },
+                        {
+                            id: '5ZtnypMovRHeeP3YTdPCYL',
+                            name: '[Library] Tailwind 3.4 Colors',
+                            description: 'Tailwind CSS color library',
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString(),
+                            publishStatus: 'published',
+                            studioUrl: `http://localhost:3004/projects/5ZtnypMovRHeeP3YTdPCYL`,
+                            publishedUrl: null,
+                            teamName: 'Personal',
+                            isFavorite: false
+                        },
+                        {
+                            id: 'd2Pfbr6bN5UwJ4ss7Fh3HB',
+                            name: '[Library] Tabler 3.2 Icons',
+                            description: 'Tabler icon library',
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString(),
+                            publishStatus: 'published',
+                            studioUrl: `http://localhost:3004/projects/d2Pfbr6bN5UwJ4ss7Fh3HB`,
+                            publishedUrl: null,
+                            teamName: 'Personal',
+                            isFavorite: false
+                        },
+                        {
+                            id: '4vjRXvnb4XuY6J15w9oRcQ',
+                            name: '[Library] Tailwind 3.4 Number Tokens',
+                            description: 'Tailwind number token library',
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString(),
+                            publishStatus: 'published',
+                            studioUrl: `http://localhost:3004/projects/4vjRXvnb4XuY6J15w9oRcQ`,
+                            publishedUrl: null,
+                            teamName: 'Personal',
+                            isFavorite: false
+                        },
+                        {
+                            id: 'sku8iwsELqAmVdbX3sqZff',
+                            name: 'Plexus',
+                            description: 'Plexus project for the admin user',
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString(),
+                            publishStatus: 'published',
+                            studioUrl: `http://localhost:3004/projects/sku8iwsELqAmVdbX3sqZff`,
+                            publishedUrl: null,
+                            teamName: 'Personal',
+                            isFavorite: false
+                        }
+                    ];
+                    
+                    displayProjects(demoProjects, token);
+                    showStatus('Using demo projects (API not available). Please check that your Plasmic server is running and seeded with projects.', 'success');
+                }
+            }
+            
+            function displayProjects(projects, token) {
+                const projectsList = document.getElementById('projectsList');
+                
+                if (projects.length === 0) {
+                    projectsList.innerHTML = '<p>No projects found. Create your first project in Plasmic!</p>';
+                    document.getElementById('projectsSection').style.display = 'block';
+                    builderContainer.classList.remove('active');
+                    return;
+                }
+                
+                let projectsHTML = '<div class="projects-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">';
+                
+                projects.forEach(project => {
+                    // Use the studio URL from the API response (it includes the correct port)
+                    // Replace port 3004 with 3003 for the frontend URL and append the token
+                    let studioUrl = project.studioUrl || `http://localhost:3004/projects/${project.id}`;
+                    // Convert to frontend port (3003) and add token
+                    const projectUrlWithToken = studioUrl.replace('localhost:3004', 'localhost:3003') + `?token=${token}`;
+                    
+                    projectsHTML += `
+                        <div class="project-card" style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px;">
+                            <h3 style="margin: 0 0 10px 0; color: #333; cursor: pointer; text-decoration: underline;" class="project-name" data-project-id="${project.id}" data-token="${token}">${project.name}</h3>
+                            <p style="color: #666; font-size: 0.9em; margin: 0 0 10px 0;">${project.description || 'No description'}</p>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                                <span style="font-size: 0.8em; color: #888;">${new Date(project.updatedAt).toLocaleDateString()}</span>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="open-project-btn btn" data-project-id="${project.id}" data-token="${token}" style="padding: 6px 12px; font-size: 0.8em;">
+                                        Open in Builder
+                                    </button>
+                                    <a href="${projectUrlWithToken}" target="_blank" class="btn" style="padding: 6px 12px; font-size: 0.8em; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">
+                                        🌐 New Tab
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                projectsHTML += '</div>';
+                projectsList.innerHTML = projectsHTML;
+                document.getElementById('projectsSection').style.display = 'block';
+                
+                // Add event listeners to open buttons
+                document.querySelectorAll('.open-project-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const projectId = this.getAttribute('data-project-id');
+                        const token = this.getAttribute('data-token');
+                        // Use the same logic as in the display function to construct the URL
+                        const projectUrlWithToken = `http://localhost:3003/projects/${projectId}?token=${token}`;
+                        openProjectInBuilderWithUrl(projectUrlWithToken, projectId);
+                        
+                        // Log for debugging
+                        console.log(`Opening project ${projectId} with URL: ${projectUrlWithToken}`);
+                    });
+                });
+                
+                // Add event listeners to project names for direct click
+                document.querySelectorAll('.project-name').forEach(nameElement => {
+                    nameElement.addEventListener('click', function() {
+                        const projectId = this.getAttribute('data-project-id');
+                        const token = this.getAttribute('data-token');
+                        // Use the same logic as in the display function to construct the URL
+                        const projectUrlWithToken = `http://localhost:3003/projects/${projectId}?token=${token}`;
+                        openProjectInBuilderWithUrl(projectUrlWithToken, projectId);
+                        
+                        // Log for debugging
+                        console.log(`Opening project ${projectId} with URL: ${projectUrlWithToken}`);
+                    });
+                });
+                
+                // Hide the builder container since we're showing projects now
+                builderContainer.classList.remove('active');
+            }
+            
+            function openProjectInBuilder(projectId, token) {
+                // Set the iframe source to the specific project with the token
+                // Use the proper Plasmic URL format for a specific project
+                // The correct format is http://localhost:3003/p/{projectId}?token={jwtToken}
+                const projectUrl = `http://localhost:3003/projects/${projectId}?token=${token}`;
+                
+                openProjectInBuilderWithUrl(projectUrl, projectId);
+            }
+            
+            function openProjectInBuilderWithUrl(projectUrl, projectId) {
+                // Set the iframe source to the specific project with the token
+                builderIframe.src = projectUrl;
+                
+                // Show the builder container
+                builderContainer.classList.add('active');
+                
+                // Scroll to the builder
+                builderContainer.scrollIntoView({ behavior: 'smooth' });
+                
+                showStatus(`Opening project "${projectId}" in Plasmic Builder...`, 'success');
+                
+                // Log to console for debugging
+                console.log(`Opening project with URL: ${projectUrl}`);
+            }
+            
+            function showStatus(message, type) {
+                statusMessage.textContent = message;
+                statusMessage.className = 'status';
+                statusMessage.classList.add(type);
+            }
+            
+            function isValidEmail(email) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailRegex.test(email);
+            }
+            
+            // CMS Integration Demo Functions
+            document.getElementById('openPlasmicBtn').addEventListener('click', function() {
+                // Use the current token if available, or fall back to demo token
+                const tokenElement = document.getElementById('tokenText');
+                const token = tokenElement.textContent || demoToken;
+                const projectId = 'tH77ekFNugan8Yv3d3xJez';
+                
+                showCmsStatus(`Opening Home Page in Plasmic Builder with token...`, 'success');
+                
+                // Validate that we have a valid token
+                if (!token || token === '') {
+                    showCmsStatus('No token available. Please authenticate first using the form above.', 'error');
+                    return;
+                }
+                
+                // Simulate the backend call that would happen in a real CMS
+                setTimeout(() => {
+                    const plasmicUrl = `http://localhost:3003/projects/${projectId}?token=${token}`;
+                    showCmsStatus(`Generated URL: <a href="${plasmicUrl}" target="_blank">${plasmicUrl}</a>`, 'success');
+                    
+                    // Log to console for debugging
+                    console.log(`Opening project with URL: ${plasmicUrl}`);
+                    console.log(`Token being used: ${token}`);
+                    
+                    // In a real implementation, you would open this URL in a new window/tab
+                    // window.open(plasmicUrl, '_blank');
+                    
+                    // For demo purposes, also load it in the builder iframe
+                    openProjectInBuilderWithUrl(plasmicUrl, projectId);
+                }, 1000);
+            });
+            
+            document.getElementById('openPlasmicBtn2').addEventListener('click', function() {
+                // Use the current token if available, or fall back to demo token
+                const tokenElement = document.getElementById('tokenText');
+                const token = tokenElement.textContent || demoToken;
+                const projectId = 'gmeH6XgPaBtkt51HunAo4g';
+                
+                showCmsStatus(`Opening About Page in Plasmic Builder with token...`, 'success');
+                
+                // Validate that we have a valid token
+                if (!token || token === '') {
+                    showCmsStatus('No token available. Please authenticate first using the form above.', 'error');
+                    return;
+                }
+                
+                // Simulate the backend call that would happen in a real CMS
+                setTimeout(() => {
+                    const plasmicUrl = `http://localhost:3003/projects/${projectId}?token=${token}`;
+                    showCmsStatus(`Generated URL: <a href="${plasmicUrl}" target="_blank">${plasmicUrl}</a>`, 'success');
+                    
+                    // Log to console for debugging
+                    console.log(`Opening project with URL: ${plasmicUrl}`);
+                    console.log(`Token being used: ${token}`);
+                    
+                    // In a real implementation, you would open this URL in a new window/tab
+                    // window.open(plasmicUrl, '_blank');
+                    
+                    // For demo purposes, also load it in the builder iframe
+                    openProjectInBuilderWithUrl(plasmicUrl, projectId);
+                }, 1000);
+            });
+            
+            function showCmsStatus(message, type) {
+                const cmsStatus = document.getElementById('cmsStatusMessage');
+                cmsStatus.innerHTML = message;
+                cmsStatus.className = 'status';
+                cmsStatus.classList.add(type);
+            }
+        });
+    </script>
+</body>
+</html>

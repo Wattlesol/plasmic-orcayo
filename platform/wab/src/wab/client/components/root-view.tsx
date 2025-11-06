@@ -472,17 +472,25 @@ export function Root() {
         // Check for project ID in URL query parameters (JWT token is handled in API constructor)
         const urlParams = new URLSearchParams(window.location.search);
         const projectId = urlParams.get('projectId');
+        const jwtToken = urlParams.get('token') || urlParams.get('jwt');
         
         if (projectId) {
           // Store the project ID in a variable to be used after initialization
           (window as any)._pendingProjectRedirect = projectId;
-          
-          // Remove the project ID from the URL
-          const newUrl = window.location.protocol + "//" + 
-                         window.location.host + 
-                         window.location.pathname + 
-                         window.location.search.replace(/[&\?](projectId)=[^&]*/, '').replace(/[&\?]$/, '') +
-                         window.location.hash;
+        }
+        
+        if (jwtToken) {
+          // Store the JWT token flag to redirect to projects page after authentication
+          (window as any)._pendingJwtAuth = true;
+        }
+        
+        if (projectId || jwtToken) {
+          // Remove the parameters from the URL to prevent them from being logged or cached
+          let newUrl = window.location.protocol + "//" + 
+                       window.location.host + 
+                       window.location.pathname + 
+                       window.location.search.replace(/[&\?](projectId|token|jwt)=[^&]*/g, '').replace(/[&\?]$/, '') +
+                       window.location.hash;
           window.history.replaceState({}, document.title, newUrl);
         }
 
@@ -550,6 +558,16 @@ export function Root() {
         setTimeout(() => {
           const projectUrl = `/p/${pendingProjectId}`;
           nonAuthCtx.history.push(projectUrl);
+        }, 0);
+      } 
+      // Check if there's a pending JWT auth redirect to projects page
+      else if ((window as any)._pendingJwtAuth) {
+        // Clear the pending JWT auth flag
+        delete (window as any)._pendingJwtAuth;
+        
+        // Redirect to the projects page
+        setTimeout(() => {
+          nonAuthCtx.history.push(fillRoute(APP_ROUTES.allProjects, {}));
         }, 0);
       }
     }
