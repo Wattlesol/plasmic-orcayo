@@ -288,6 +288,8 @@ import {
 export const updatableUserFields = [
   "firstName",
   "lastName",
+  "userId",
+  "tenantId",
   "role",
   "source",
   "surveyResponse",

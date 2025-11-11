@@ -850,7 +850,7 @@ function PlasmicWorkspaceSection__RenderFunc(props: {
             />
           ) : null}
         </Stack__>
-        {(hasVariant($state, "canUseCms", "canUseCms") ? true : false) ? (
+        {/* {(hasVariant($state, "canUseCms", "canUseCms") ? true : false) && (
           <div
             data-plasmic-name={"cmsSection"}
             data-plasmic-override={overrides.cmsSection}
@@ -963,7 +963,7 @@ function PlasmicWorkspaceSection__RenderFunc(props: {
               })}
             </Stack__>
           </div>
-        ) : null}
+        )} */}
       </div>
     </div>
   ) as React.ReactElement | null;

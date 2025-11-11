@@ -12,6 +12,7 @@
 // Component: nSkQWLjK-B
 
 import * as React from "react";
+import logo from "./images/logo.png";
 
 import {
   Flex as Flex__,
@@ -278,12 +279,7 @@ function PlasmicDefaultLayout__RenderFunc(props: {
             href={"/"}
             platform={"react"}
           >
-            <MarkFullColorIcon
-              data-plasmic-name={"headerLogo"}
-              data-plasmic-override={overrides.headerLogo}
-              className={classNames(projectcss.all, sty.headerLogo)}
-              role={"img"}
-            />
+            <img src={logo} style={{width: '150px'}} alt="img" />
           </PlasmicLink__>
           <Stack__
             as={"div"}
@@ -362,38 +358,6 @@ function PlasmicDefaultLayout__RenderFunc(props: {
                 </div>
               </Button>
             </div>
-            <NavButton
-              data-plasmic-name={"upgradeButton"}
-              data-plasmic-override={overrides.upgradeButton}
-              bold={true}
-              className={classNames("__wab_instance", sty.upgradeButton)}
-              endIcon={
-                <TriangleBottomIcon
-                  className={classNames(projectcss.all, sty.svg__uSFd)}
-                  role={"img"}
-                />
-              }
-              smallIcon={true}
-              startIcon={
-                <RocketSvgIcon
-                  className={classNames(projectcss.all, sty.svg__vF1)}
-                  role={"img"}
-                />
-              }
-              violet={true}
-            >
-              {"Upgrade"}
-            </NavButton>
-            <FreeTrial
-              data-plasmic-name={"freeTrial"}
-              data-plasmic-override={overrides.freeTrial}
-              className={classNames("__wab_instance", sty.freeTrial)}
-              topBar={
-                hasVariant(globalVariants, "screen", "mobile")
-                  ? true
-                  : undefined
-              }
-            />
           </Stack__>
         </div>
       </header>
@@ -471,7 +435,7 @@ function PlasmicDefaultLayout__RenderFunc(props: {
               >
                 {"All projects"}
               </NavButton>
-              <NavButton
+              {/* <NavButton
                 data-plasmic-name={"myProjectsButton"}
                 data-plasmic-override={overrides.myProjectsButton}
                 className={classNames("__wab_instance", sty.myProjectsButton, {
@@ -506,7 +470,7 @@ function PlasmicDefaultLayout__RenderFunc(props: {
                 }
               >
                 {"My Playground"}
-              </NavButton>
+              </NavButton> */}
               <NavSeparator
                 className={classNames(
                   "__wab_instance",

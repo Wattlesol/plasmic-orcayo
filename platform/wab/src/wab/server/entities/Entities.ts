@@ -250,6 +250,7 @@ export class User extends OrgChild<"UserId"> {
   @Column("text", { unique: true })
   @IsEmail({ ignore_max_length: true })
   email: string;
+  
   @Column("text", { select: false }) bcrypt: string | undefined;
   @Column("timestamptz", { nullable: true })
   permanentlyDeletedAt: Date | null;
@@ -281,6 +282,14 @@ export class User extends OrgChild<"UserId"> {
 
   @Column("jsonb", { nullable: true })
   whiteLabelInfo: UserWhiteLabelInfo | null;
+
+  @Index()
+  @Column("text", { nullable: true, name: "user_id" })
+  userId: string | null;
+
+  @Index()
+  @Column("text", { nullable: true, name: "tenant_id" })
+  tenantId: string | null;
 
   @ManyToOne(() => PromotionCode, { nullable: true })
   signUpPromotionCode: PromotionCode | null;

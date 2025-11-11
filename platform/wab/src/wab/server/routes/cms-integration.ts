@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { jwtAuthMiddleware, generateUserJwtToken } from "@/wab/server/auth/jwt-auth";
-import { superDbMgr } from "@/wab/server/routes/util";
-import { User } from "@/wab/server/entities/Entities";
+import { jwtAuthMiddleware, generateUserJwtToken, generateJwtToken } from "@/wab/server/auth/jwt-auth";
+import { superDbMgr, userDbMgr } from "@/wab/server/routes/util";
+import { User, Org, Workspace, Project } from "@/wab/server/entities/Entities";
 import { logger } from "@/wab/server/observability";
 import { ForbiddenError, BadRequestError } from "@/wab/shared/ApiErrors/errors";
 
@@ -18,33 +18,112 @@ export async function cmsGenerateTokenPublic(req: Request, res: Response) {
     return res.status(401).json({ error: "Invalid API key" });
   }
 
-  const { email } = req.body;
-
+  const { email, user_id, tenant_id } = req.body;
   if (!email) {
     return res.status(400).json({
-      error: "userId and email are required"
+      error: "email required"
+    });
+  }
+  if (!user_id) {
+    return res.status(400).json({
+      error: "user_id required"
+    });
+  }
+  if (!tenant_id) {
+    return res.status(400).json({
+      error: "tenant_id required"
     });
   }
 
   try {
-    // Verify that the user exists in the database
-    const mgr = superDbMgr(req);
-    let user = await mgr.getUserByEmail(email);
-
+    // First, create or update the user using superDbMgr (bypasses authentication)
+    const superMgr = superDbMgr(req);
+    let user = await superMgr.getUserByEmail(email);
+    
+    // if not create new user
     if (!user) {
-      user = await mgr.createUser({
+      user = await superMgr.createUser({
         email,
-        needsTeamCreationPrompt: false,
+        userId: user_id,
+        tenantId: tenant_id,
+        needsTeamCreationPrompt: false, // Important: prevents automatic team creation
         needsSurvey: false,
         needsIntroSplash: false,
       });
     }
 
+    if (!user.userId) {
+      // Update user with provided user_id if not already set
+      user.userId = user_id;
+      user.tenantId = tenant_id;
+      await superMgr.updateUser(user);
+    }
+
+    // Add the user to the request so userDbMgr can work properly
+    (req as any).user = user;
+    const userMgr = userDbMgr(req);
+
+    // Check if user already has an owning team
+    let team;
+    if (user.owningTeamId) {
+      // Use existing team
+      team = await userMgr.getTeamById(user.owningTeamId);
+    } else {
+      // Create team in user context (this should work properly now)
+      team = await userMgr.createTeam(`${tenant_id} Team`);
+      
+      // Update user to reference the team using super manager
+      user.owningTeamId = team.id;
+      await superMgr.updateUser(user);
+    }
+    
+    // Create workspace if not exists in user context
+    let workspace;
+    try {
+      const userWorkspaces = await userMgr.getAffiliatedWorkspaces();
+      workspace = userWorkspaces.find(ws => ws.teamId === team.id);
+    } catch (e) {
+      // If method doesn't exist, continue
+    }
+    
+    if (!workspace) {
+      workspace = await userMgr.createWorkspace({
+        name: `${tenant_id} Workspace`,
+        description: `Default workspace for ${tenant_id}`,
+        teamId: team.id,
+      });
+    }
+    
+    // Create project if not exists in user context
+    let project;
+    try {
+      const userProjects = await userMgr.getAffiliatedProjects();
+      project = userProjects.find(p => p.workspaceId === workspace.id);
+    } catch (e) {
+      // If method doesn't exist, continue
+    }
+    
+    if (!project) {
+      project = await userMgr.createProject({
+        name: `${tenant_id} Default Project`,
+        workspaceId: workspace.id,
+        inviteOnly: false,
+        defaultAccessLevel: "editor",
+      });
+    }
+
     // Generate a JWT token for the specified user
-    const token = generateUserJwtToken(email, user.id);
+    const token = generateJwtToken(user.id, user.email, user.tenantId || '', user.id)
 
     res.json({
+      user,
+      userId: user.id,
+      teamId: user.owningTeamId,
+      orgId: user.orgId,
       token,
+      team: { id: team.id, name: team.name },
+      workspace: { id: workspace.id, name: workspace.name },
+      project: { id: project.id, name: project.name },
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
     });
   } catch (error) {

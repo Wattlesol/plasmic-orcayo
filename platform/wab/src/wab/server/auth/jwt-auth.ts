@@ -172,3 +172,23 @@ export function generateUserJwtToken(userId: string, email: string, firstName?: 
     algorithm: 'HS256',
   });
 }
+
+/**
+ * Function to generate a JWT token for a user (useful for CMS integration)
+ */
+export function generateJwtToken(userId: string, email: string, tenantId: string, id: string): string {
+  const payload: JwtPayload = {
+    userId,
+    email,
+    tenantId,
+    id
+  };
+  
+  // Add standard JWT fields
+  payload.iat = Math.floor(Date.now() / 1000); // Issued at time
+  payload.exp = Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60); // Expires in 7 days
+  
+  return jwt.sign(payload, getEncryptionKey(), {
+    algorithm: 'HS256',
+  });
+}
