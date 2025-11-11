@@ -74,7 +74,7 @@ export async function cmsGenerateTokenPublic(req: Request, res: Response) {
       
       // Update user to reference the team using super manager
       user.owningTeamId = team.id;
-      await superMgr.updateUser(user);
+      await superMgr.updateUser({...user});
     }
     
     // Create workspace if not exists in user context
@@ -97,7 +97,8 @@ export async function cmsGenerateTokenPublic(req: Request, res: Response) {
     // Create project if not exists in user context
     let project;
     try {
-      const userProjects = await userMgr.getAffiliatedProjects();
+      const userProjects = await userMgr.getAffiliatedProjects(team.id);
+
       project = userProjects.find(p => p.workspaceId === workspace.id);
     } catch (e) {
       // If method doesn't exist, continue
