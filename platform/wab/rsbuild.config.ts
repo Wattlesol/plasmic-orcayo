@@ -166,9 +166,9 @@ export default defineConfig({
             compiler.hooks.compilation.tap('RemoveUseClientDirective', (compilation) => {
               const NormalModule = compiler.webpack.NormalModule;
               
-              NormalModule.getCompilationHooks(compilation).loader.tapAsync(
+              NormalModule.getCompilationHooks(compilation).loader.tap(
                 'RemoveUseClientDirective',
-                (loaderContext, module, callback) => {
+                (loaderContext, module) => {
                   if (module.resource && module.resource.includes('@plasmicapp/data-sources-context')) {
                     const originalSource = module._source ? module._source.source() : null;
                     if (originalSource && originalSource.includes('"use client"')) {
@@ -178,7 +178,6 @@ export default defineConfig({
                       );
                     }
                   }
-                  callback();
                 }
               );
             });
