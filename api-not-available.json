@@ -1,0 +1,4 @@
+{
+  "error": "API endpoints are not available on this static deployment. The full Plasmic application requires both frontend and backend services running together.",
+  "info": "For a complete Plasmic deployment, you need to run both the frontend and backend services. See the documentation for deployment options."
+}

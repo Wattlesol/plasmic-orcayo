@@ -35,8 +35,16 @@
     "test:types": "tstyche $TEST_CWD",
     "typecheck": "cd platform/wab && yarn ts-watch",
     "upgrade-internal": "bash scripts/upgrade-internal.bash",
-    "msw:update": "msw init ./msw --save=false"
+    "msw:update": "msw init ./msw --save=false",
+    "build": "cd platform/wab && yarn build",
+    "vercel-build": "cd platform/wab && yarn build",
+    "vercel-dev": "vercel dev"
   },
+  "dependencies": {
+    "jsonwebtoken": "^9.0.0",
+    "@vercel/postgres": "^0.5.0"
+  }
+}
   "resolutions": {
     "eslint": "^8.55.0",
     "jest": "29.7.0",
