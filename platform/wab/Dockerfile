@@ -104,8 +104,6 @@ RUN cd platform/canvas-packages && \
 # Final setup steps (excluding the make command that was causing issues)
 RUN cd platform/wab && \
     mkdir -p build dev-build && \
-    # Copy tsconfig.json to the wab directory so tsconfig-paths can find it when running from this directory
-    cp ../tsconfig.json . && \
     yarn add bcrypt --build-from-source && \
     yarn cache clean
 
@@ -127,6 +125,9 @@ WORKDIR /app
 
 # Copy built application from builder stage
 COPY --from=builder --chown=plasmic:nodejs /app /app
+
+# Copy tsconfig.json to the platform/wab directory so tsconfig-paths can find it when running from this directory
+RUN cp /app/tsconfig.json /app/platform/wab/tsconfig.json
 
 # Change ownership to non-root user
 USER plasmic
