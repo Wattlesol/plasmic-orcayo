@@ -7,6 +7,7 @@ services:
     environment:
       - DATABASE_URI=postgresql://wab:SEKRET@142.44.136.233:5432/plasmic-db
       - WAB_DBHOST=142.44.136.233
+      - WAB_DBPORT=5432
       - WAB_DBUSER=wab
       - WAB_DBPASSWORD=SEKRET
       - WAB_DBNAME=plasmic-db
@@ -16,4 +17,4 @@ services:
       - PLASMIC_DEPLOYMENT_ENV=production
     ports:
       - "3003-3005:3003-3005"
-    command: sh -c "sleep 30 && cd /app/platform/wab && yarn typeorm migration:run && yarn backend"
+    command: sh -c "sleep 30 && cd /app/platform/wab && node test-db-connection.js && yarn typeorm migration:run && yarn backend"
