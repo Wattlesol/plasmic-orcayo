@@ -4,7 +4,7 @@ module.exports = {
   username: process.env.WAB_DBUSER || "wab",
   database: process.env.WAB_DBNAME || "plasmic-db",
   password: process.env.WAB_DBPASSWORD || "SEKRET",
-  port: parseInt(process.env.WAB_DBPORT || "5432", 10),
+  port: parseInt(process.env.WAB_DBPORT || "5433", 10),
   synchronize: false,
   dropSchema: false,
   logging: false,

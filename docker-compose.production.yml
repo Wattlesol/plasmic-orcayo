@@ -5,9 +5,9 @@ services:
       dockerfile: production.Dockerfile
     restart: always
     environment:
-      - DATABASE_URI=postgresql://wab:SEKRET@142.44.136.233:5432/plasmic-db
+      - DATABASE_URI=postgresql://wab:SEKRET@142.44.136.233:5433/plasmic-db
       - WAB_DBHOST=142.44.136.233
-      - WAB_DBPORT=5432
+      - WAB_DBPORT=5433
       - WAB_DBUSER=wab
       - WAB_DBPASSWORD=SEKRET
       - WAB_DBNAME=plasmic-db

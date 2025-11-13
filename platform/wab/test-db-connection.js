@@ -3,7 +3,7 @@ const { Client } = require('pg');
 async function testConnection() {
   const client = new Client({
     host: process.env.WAB_DBHOST || '142.44.136.233',
-    port: parseInt(process.env.WAB_DBPORT || '5432', 10),
+    port: parseInt(process.env.WAB_DBPORT || '5433', 10),
     user: process.env.WAB_DBUSER || 'wab',
     password: process.env.WAB_DBPASSWORD || 'SEKRET',
     database: process.env.WAB_DBNAME || 'plasmic-db',
