@@ -93,7 +93,7 @@ docker-compose -f docker-compose.prod.yml ps
 docker-compose -f docker-compose.prod.yml logs -f
 
 # Scale the application (if needed)
-docker-compose -f docker-compose.prod.yml up --scale plasmic-app=2
+docker-compose -f docker-compose.prod.yml up --scale app=2
 
 # Run migrations manually (if needed)
 docker-compose -f docker-compose.prod.yml exec plasmic-app sh -c "cd /app/platform/wab && yarn typeorm migration:run"
@@ -122,7 +122,7 @@ Migrations are automatically run when the application starts up. For manual exec
 
 ```bash
 # Run in the container
-docker-compose -f docker-compose.prod.yml exec plasmic-app sh -c "cd /app/platform/wab && yarn typeorm migration:run"
+docker-compose -f docker-compose.prod.yml exec app sh -c "cd /app/platform/wab && yarn typeorm migration:run"
 ```
 
 ## Environment Variables
