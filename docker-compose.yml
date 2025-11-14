@@ -25,10 +25,11 @@ services:
       dockerfile: Dockerfile.fixed
     command: # Override the default dockerfile startup command here for debugging purpose
     - |
+      cd /plasmic/platform/wab && \
+      if [ -f ormconfig.json.backup ]; then cp ormconfig.json.backup ormconfig.json; fi && \
+      jq '(.host = "plasmic-db") | (.password //= "SEKRET")' ormconfig.json > tmp.json && \
+      mv tmp.json ormconfig.json && \
       cd /plasmic && \
-      cp ormconfig.json tmp_ormconfig.json && \
-      jq '(.host = "plasmic-db") | (.password //= "SEKRET")' tmp_ormconfig.json > ormconfig.json && \
-      rm tmp_ormconfig.json && \
       yarn typeorm migration:run && \
       yarn seed && \
       yarn dev
