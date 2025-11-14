@@ -25,29 +25,9 @@ services:
       context: .
       dockerfile: Dockerfile.fixed
     command: # Override the default dockerfile startup command here for debugging purpose
-    - |
-      cd /plasmic/platform/wab && \
-      # Ensure ormconfig.json exists by copying from backup if needed \
-      if [ -f ormconfig.json.backup ]; then \
-        cp ormconfig.json.backup /tmp/ormconfig.json && \
-        # Update the config with correct database settings using environment variables \
-        export WAB_DBHOST="plasmic-db" && \
-        export WAB_DBUSER="wab" && \
-        export WAB_DBPASSWORD="SEKRET" && \
-        export WAB_DBNAME="wab" && \
-        export WAB_DBPORT="5432" && \
-        # Use jq to replace placeholders in the temporary file \
-        jq --arg host "$WAB_DBHOST" --arg user "$WAB_DBUSER" --arg pass "$WAB_DBPASSWORD" --arg name "$WAB_DBNAME" --argjson port "$WAB_DBPORT" \
-          '.host = $host | .username = $user | .password = $pass | .database = $name | .port = $port' \
-          /tmp/ormconfig.json > ormconfig.json; \
-      fi && \
-      export YARN_CACHE_FOLDER="/tmp/yarn-cache-$(id -u)" && \
-      # Wait for database to be ready before running migrations \
-      until pg_isready -h plasmic-db -p 5432 -U wab -d wab; do \
-        echo "Waiting for plasmic-db database..."; \
-        sleep 2; \
-      done && \
-      npx typeorm migration:run && \
+     - |
+      jq '(.host = "plasmic-db") | (.password //= "SEKRET")' ormconfig.json > tmp.json && mv tmp.json ormconfig.json && \
+      yarn typeorm migration:run && \
       yarn seed && \
       cd /plasmic && \
       yarn dev
