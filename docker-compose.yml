@@ -33,19 +33,20 @@ services:
         sleep 2; \
       done && \
       cd /plasmic/platform/wab && \
-      # Make sure we have the config file by copying it to a safe location \
-      if [ -f ormconfig.json.backup ]; then \
-        cp ormconfig.json.backup /tmp/ormconfig.json && \
-        # Use the environment variables directly by setting them in the process \
-        export TYPEORM_HOST=plasmic-db && \
-        export TYPEORM_USERNAME=wab && \
-        export TYPEORM_PASSWORD=SEKRET && \
-        export TYPEORM_DATABASE=wab && \
-        export TYPEORM_PORT=5432 && \
-        npx typeorm migration:run && \
-        yarn seed && \
-        cd /plasmic && \
-        yarn dev
+      # Use the environment variables directly \
+      export TYPEORM_HOST=plasmic-db && \
+      export TYPEORM_USERNAME=wab && \
+      export TYPEORM_PASSWORD=SEKRET && \
+      export TYPEORM_DATABASE=wab && \
+      export TYPEORM_PORT=5432 && \
+      npx typeorm migration:run && \
+      yarn seed && \
+      cd /plasmic && \
+      yarn dev
+      # 1. Mount your local source code into the container
+      - .:/plasmic
+      # 2. Use named volumes to preserve built container files from being overwritten by unbuilt local code
+      # --- Node Modules (Existing) ---
       - plasmic_node_modules:/plasmic/node_modules
       - plasmic_wab_node_modules:/plasmic/platform/wab/node_modules
       - plasmic_sub_node_modules:/plasmic/platform/sub/node_modules
