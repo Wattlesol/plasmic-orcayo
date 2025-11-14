@@ -25,37 +25,27 @@ services:
       context: .
       dockerfile: Dockerfile.fixed
     command: # Override the default dockerfile startup command here for debugging purpose
-    - |
-      cd /plasmic/platform/wab && \
-      # Ensure ormconfig.json exists by copying from backup if needed \
-      if [ -f ormconfig.json.backup ]; then \
-        cp ormconfig.json.backup /tmp/ormconfig.json && \
-        # Update the config with correct database settings using environment variables \
-        export WAB_DBHOST="plasmic-db" && \
-        export WAB_DBUSER="wab" && \
-        export WAB_DBPASSWORD="SEKRET" && \
-        export WAB_DBNAME="wab" && \
-        export WAB_DBPORT="5432" && \
-        # Use jq to replace placeholders in the temporary file \
-        jq --arg host "$WAB_DBHOST" --arg user "$WAB_DBUSER" --arg pass "$WAB_DBPASSWORD" --arg name "$WAB_DBNAME" --argjson port "$WAB_DBPORT" \
-          '.host = $host | .username = $user | .password = $pass | .database = $name | .port = $port' \
-          /tmp/ormconfig.json > ormconfig.json; \
-      fi && \
+     - |
       export YARN_CACHE_FOLDER="/tmp/yarn-cache-$(id -u)" && \
       # Wait for database to be ready before running migrations \
       until pg_isready -h plasmic-db -p 5432 -U wab -d wab; do \
         echo "Waiting for plasmic-db database..."; \
         sleep 2; \
       done && \
-      npx typeorm migration:run && \
-      yarn seed && \
-      cd /plasmic && \
-      yarn dev
-    volumes:
-      # 1. Mount your local source code into the container
-      - .:/plasmic
-      # 2. Use named volumes to preserve built container files from being overwritten by unbuilt local code
-      # --- Node Modules (Existing) ---
+      cd /plasmic/platform/wab && \
+      # Make sure we have the config file by copying it to a safe location \
+      if [ -f ormconfig.json.backup ]; then \
+        cp ormconfig.json.backup /tmp/ormconfig.json && \
+        # Use the environment variables directly by setting them in the process \
+        export TYPEORM_HOST=plasmic-db && \
+        export TYPEORM_USERNAME=wab && \
+        export TYPEORM_PASSWORD=SEKRET && \
+        export TYPEORM_DATABASE=wab && \
+        export TYPEORM_PORT=5432 && \
+        npx typeorm migration:run && \
+        yarn seed && \
+        cd /plasmic && \
+        yarn dev
       - plasmic_node_modules:/plasmic/node_modules
       - plasmic_wab_node_modules:/plasmic/platform/wab/node_modules
       - plasmic_sub_node_modules:/plasmic/platform/sub/node_modules
