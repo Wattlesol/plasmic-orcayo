@@ -13,10 +13,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./platform/wab/tools/docker-dev/db-setup.bash:/docker-entrypoint-initdb.d/db-setup.sh
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U wab"]
+      test: ["CMD-SHELL", "pg_isready -U wab -d wab"]
       interval: 5s
       timeout: 10s
-      retries: 5
+      retries: 10
+      start_period: 30s
 
   # Plasmic WAB (Web App Builder)
   app:
@@ -25,6 +26,11 @@ services:
       dockerfile: Dockerfile.fixed
     command: # Override the default dockerfile startup command here for debugging purpose
     - |
+      # Wait for database to be ready \
+      until pg_isready -h plasmic-db -p 5432 -U wab; do \
+        echo "Waiting for plasmic-db database..."; \
+        sleep 2; \
+      done && \
       # Set TypeORM environment variables to configure database connection \
       export TYPEORM_HOST="plasmic-db" && \
       export TYPEORM_USERNAME="wab" && \
