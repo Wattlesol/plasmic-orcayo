@@ -26,11 +26,6 @@ services:
       dockerfile: Dockerfile.fixed
     command: # Override the default dockerfile startup command here for debugging purpose
     - |
-      # Wait for database to be ready \
-      until pg_isready -h plasmic-db -p 5432 -U wab; do \
-        echo "Waiting for plasmic-db database..."; \
-        sleep 2; \
-      done && \
       # Set TypeORM environment variables to configure database connection \
       export TYPEORM_HOST="plasmic-db" && \
       export TYPEORM_USERNAME="wab" && \
@@ -40,6 +35,11 @@ services:
       export YARN_CACHE_FOLDER="/tmp/yarn-cache-$(id -u)" && \
       # Run database migrations using the locally installed typeorm \
       cd /plasmic/platform/wab && \
+      # Wait for database to be ready before running migrations \
+      until pg_isready -h plasmic-db -p 5432 -U wab -d wab; do \
+        echo "Waiting for plasmic-db database..."; \
+        sleep 2; \
+      done && \
       npx typeorm migration:run && \
       yarn seed && \
       cd /plasmic && \
