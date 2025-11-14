@@ -26,20 +26,12 @@ services:
     command: # Override the default dockerfile startup command here for debugging purpose
     - |
       cd /plasmic/platform/wab && \
-      # Check if ormconfig.json exists, if not create it from backup \
-      if [ ! -f ormconfig.json ] && [ -f ormconfig.json.backup ]; then \
-        cp ormconfig.json.backup /tmp/ormconfig.json; \
-      elif [ ! -f ormconfig.json ] && [ -f ormconfig.json.bak ]; then \
-        cp ormconfig.json.bak /tmp/ormconfig.json; \
-      elif [ -f ormconfig.json ]; then \
-        cp ormconfig.json /tmp/ormconfig.json; \
-      else \
-        echo "No ormconfig file found!" && exit 1; \
-      fi && \
-      # Update the config with correct database settings \
-      jq '(.host = "plasmic-db") | (.password //= "SEKRET")' /tmp/ormconfig.json > /tmp/updated_ormconfig.json && \
-      # Copy the updated config to the expected location, handling permissions properly \
-      cp /tmp/updated_ormconfig.json ormconfig.json && \
+      # Set TypeORM environment variables to configure database connection \
+      export TYPEORM_HOST="plasmic-db" && \
+      export TYPEORM_USERNAME="wab" && \
+      export TYPEORM_PASSWORD="SEKRET" && \
+      export TYPEORM_DATABASE="wab" && \
+      export TYPEORM_PORT="5432" && \
       cd /plasmic && \
       yarn typeorm migration:run && \
       yarn seed && \
