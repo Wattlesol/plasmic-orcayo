@@ -26,9 +26,20 @@ services:
     command: # Override the default dockerfile startup command here for debugging purpose
     - |
       cd /plasmic/platform/wab && \
-      if [ -f ormconfig.json.backup ]; then cp ormconfig.json.backup ormconfig.json; fi && \
-      jq '(.host = "plasmic-db") | (.password //= "SEKRET")' ormconfig.json > tmp.json && \
-      mv tmp.json ormconfig.json && \
+      # Check if ormconfig.json exists, if not create it from backup \
+      if [ ! -f ormconfig.json ] && [ -f ormconfig.json.backup ]; then \
+        cp ormconfig.json.backup /tmp/ormconfig.json; \
+      elif [ ! -f ormconfig.json ] && [ -f ormconfig.json.bak ]; then \
+        cp ormconfig.json.bak /tmp/ormconfig.json; \
+      elif [ -f ormconfig.json ]; then \
+        cp ormconfig.json /tmp/ormconfig.json; \
+      else \
+        echo "No ormconfig file found!" && exit 1; \
+      fi && \
+      # Update the config with correct database settings \
+      jq '(.host = "plasmic-db") | (.password //= "SEKRET")' /tmp/ormconfig.json > /tmp/updated_ormconfig.json && \
+      # Copy the updated config to the expected location, handling permissions properly \
+      cp /tmp/updated_ormconfig.json ormconfig.json && \
       cd /plasmic && \
       yarn typeorm migration:run && \
       yarn seed && \
