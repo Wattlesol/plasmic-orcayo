@@ -25,16 +25,18 @@ services:
       dockerfile: Dockerfile.fixed
     command: # Override the default dockerfile startup command here for debugging purpose
     - |
-      cd /plasmic/platform/wab && \
       # Set TypeORM environment variables to configure database connection \
       export TYPEORM_HOST="plasmic-db" && \
       export TYPEORM_USERNAME="wab" && \
       export TYPEORM_PASSWORD="SEKRET" && \
       export TYPEORM_DATABASE="wab" && \
       export TYPEORM_PORT="5432" && \
-      cd /plasmic && \
-      yarn typeorm migration:run && \
+      export YARN_CACHE_FOLDER="/tmp/yarn-cache-$(id -u)" && \
+      # Run database migrations using the locally installed typeorm \
+      cd /plasmic/platform/wab && \
+      npx typeorm migration:run && \
       yarn seed && \
+      cd /plasmic && \
       yarn dev
     volumes:
       # 1. Mount your local source code into the container
