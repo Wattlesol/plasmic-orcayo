@@ -76,7 +76,7 @@ services:
       plasmic-db:
         condition: service_healthy
     environment:
-      - DATABASE_URL=postgresql://wab:SEKRET@plasmic-db:5433/wab
+      - DATABASE_URL=postgresql://wab:SEKRET@plasmic-db:5432/wab  # Use port 5432, not 5433
       - WAB_DBHOST=plasmic-db
       - WAB_DBUSER=wab
       - WAB_DBPASSWORD=SEKRET
