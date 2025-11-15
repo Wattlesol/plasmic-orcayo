@@ -18,7 +18,6 @@ RUN apk add --no-cache \
     jq \
     openjdk11-jre-headless \
     && mkdir -p /app/platform/wab/node_modules \
-    && chown -R plasmic:nodejs /app \
     && chmod -R 755 /app
 
 WORKDIR /app
