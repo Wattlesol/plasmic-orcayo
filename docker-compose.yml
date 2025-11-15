@@ -32,12 +32,21 @@ services:
      - /bin/sh
      - -c
      - |
+          # Fix permissions for mounted volumes
+          chown -R plasmic:nodejs /app 2>/dev/null || echo "Setting permissions..." &&
           export YARN_CACHE_FOLDER="/tmp/yarn-cache-$(id -u)" &&
-          until pg_isready -h plasmic-db -p 5432 -U wab; do
+          # Wait for database to be ready before running migrations
+          until pg_isready -h plasmic-db -p 5432 -U wab -d wab; do
             echo "Waiting for plasmic-db database...";
             sleep 2;
           done &&
           cd /app/platform/wab &&
+          # Use the environment variables directly
+          export TYPEORM_HOST=plasmic-db &&
+          export TYPEORM_USERNAME=wab &&
+          export TYPEORM_PASSWORD=SEKRET &&
+          export TYPEORM_DATABASE=wab &&
+          export TYPEORM_PORT=5432 &&
           npx typeorm migration:run &&
           yarn seed &&
           cd /app &&

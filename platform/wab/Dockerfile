@@ -16,7 +16,10 @@ RUN apk add --no-cache \
     g++ \
     make \
     jq \
-    openjdk11-jre-headless
+    openjdk11-jre-headless \
+    && mkdir -p /app/platform/wab/node_modules \
+    && chown -R plasmic:nodejs /app \
+    && chmod -R 755 /app
 
 WORKDIR /app
 
@@ -46,7 +49,8 @@ RUN apk add --no-cache \
     bash \
     curl \
     postgresql-client \
-    dumb-init
+    dumb-init \
+    git
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
