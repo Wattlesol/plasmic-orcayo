@@ -19,7 +19,11 @@ export interface Config {
 }
 
 export const DEFAULT_DATABASE_URI =
-  "postgresql://wab:SEKRET@142.44.136.233:5433/plasmic-db";
+  process.env.DATABASE_URI || 
+  process.env.DATABASE_URL || 
+  (process.env.DOCKER_ENV 
+    ? "postgresql://wab:SEKRET@plasmic-db:5432/wab" 
+    : "postgresql://wab:SEKRET@localhost:5432/wab");
 
 const DEFAULT_CONFIG: Config = {
   host: getPublicUrl(),

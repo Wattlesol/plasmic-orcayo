@@ -15,7 +15,7 @@ export interface TutorialDbInfo {
 }
 
 export function getTutorialDbHost() {
-  return process.env.TUTORIAL_DB_HOST ?? "localhost";
+  return process.env.TUTORIAL_DB_HOST ?? process.env.DB_HOST ?? "localhost";
 }
 
 export async function createTutorialDb(
