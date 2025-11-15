@@ -17,7 +17,7 @@ services:
       retries: 5
 
   # Plasmic WAB (Web App Builder)
-  plasmic-wab:
+  app:
     build:
       context: .
       dockerfile: ./platform/wab/tools/docker-dev/Dockerfile.dev.aio
