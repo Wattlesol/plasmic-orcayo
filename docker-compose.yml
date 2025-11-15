@@ -49,12 +49,13 @@ services:
     - /bin/sh
     - -c
     - |
+      export PGPASSWORD=SEKRET &&
+      cd /plasmic/platform/wab &&
       # Wait for database to be ready before running migrations
       until pg_isready -h plasmic-db -p 5432 -U wab -d wab; do
         echo "Waiting for plasmic-db database...";
         sleep 2;
       done &&
-      cd /plasmic/platform/wab &&
       # Modify ormconfig.json in a safe way
       cp ormconfig.json tmp_ormconfig.json &&
       jq '(.host = "plasmic-db") | (.password //= "SEKRET")' tmp_ormconfig.json > ormconfig.json &&
