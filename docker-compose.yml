@@ -32,8 +32,6 @@ services:
      - /bin/sh
      - -c
      - |
-          # Fix permissions for mounted volumes
-          chown -R plasmic:nodejs /app 2>/dev/null || echo "Setting permissions..." &&
           export YARN_CACHE_FOLDER="/tmp/yarn-cache-$(id -u)" &&
           # Wait for database to be ready before running migrations
           export PGPASSWORD=SEKRET &&
@@ -41,6 +39,9 @@ services:
             echo "Waiting for plasmic-db database...";
             sleep 2;
           done &&
+          cd /app &&
+          # Install dependencies to ensure all modules are available
+          yarn install --frozen-lockfile --network-timeout 300000 --prefer-offline &&
           cd /app/platform/wab &&
           # Use the environment variables directly
           export TYPEORM_HOST=plasmic-db &&
@@ -48,6 +49,7 @@ services:
           export TYPEORM_PASSWORD=SEKRET &&
           export TYPEORM_DATABASE=wab &&
           export TYPEORM_PORT=5432 &&
+          npx typeorm migration:run &&
           yarn seed &&
           cd /app &&
           yarn dev
@@ -56,7 +58,6 @@ services:
       - .:/app
       # 2. Use named volumes to preserve built container files from being overwritten by unbuilt local code
       # --- Node Modules (Existing) ---
-      - ./platform/wab:/app/platform/wab
       - plasmic_node_modules:/app/node_modules
       - plasmic_wab_node_modules:/app/platform/wab/node_modules
       - plasmic_sub_node_modules:/app/platform/sub/node_modules
