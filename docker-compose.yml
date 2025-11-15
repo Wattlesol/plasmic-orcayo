@@ -45,12 +45,23 @@ services:
     build:
       context: .
       dockerfile: ./platform/wab/tools/docker-dev/Dockerfile.dev.aio
-    command: # Override the default dockerfile startup command here for debugging purpose
+    command: # Override the default dockerfile startup command here for production
+    - /bin/sh
+    - -c
     - |
-      jq '(.host = "plasmic-db") | (.password //= "SEKRET")' ormconfig.json > tmp.json && mv tmp.json ormconfig.json && \
-      yarn typeorm migration:run && \
-      yarn seed && \
-      cd /plasmic && \
+      # Wait for database to be ready before running migrations
+      until pg_isready -h plasmic-db -p 5432 -U wab -d wab; do
+        echo "Waiting for plasmic-db database...";
+        sleep 2;
+      done &&
+      cd /plasmic/platform/wab &&
+      # Modify ormconfig.json in a safe way
+      cp ormconfig.json tmp_ormconfig.json &&
+      jq '(.host = "plasmic-db") | (.password //= "SEKRET")' tmp_ormconfig.json > ormconfig.json &&
+      rm tmp_ormconfig.json &&
+      yarn typeorm migration:run &&
+      yarn seed &&
+      cd /plasmic &&
       yarn dev
     volumes:
       # 1. Mount your local source code into the container
