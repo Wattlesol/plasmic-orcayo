@@ -1,20 +1,44 @@
+# services:
+#   # PostgreSQL database
+#   plasmic-db:
+#     image: postgres:15
+#     restart: always
+#     environment:
+#       - POSTGRES_PASSWORD=SEKRET
+#     ports:
+#       - "5433:5432"
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+#       - ./platform/wab/tools/docker-dev/db-setup.bash:/docker-entrypoint-initdb.d/db-setup.sh
+#     healthcheck:
+#       test: ["CMD-SHELL", "pg_isready -U postgres"]
+#       interval: 5s
+#       timeout: 10s
+#       retries: 5
 services:
   # PostgreSQL database
   plasmic-db:
     image: postgres:15
     restart: always
     environment:
-      - POSTGRES_PASSWORD=SEKRET
+      POSTGRES_DB: wab
+      POSTGRES_USER: wab
+      POSTGRES_PASSWORD: SEKRET
     ports:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./platform/wab/tools/docker-dev/db-setup.bash:/docker-entrypoint-initdb.d/db-setup.sh
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U wab -d wab"]
       interval: 5s
       timeout: 10s
-      retries: 5
+      retries: 10
+      start_period: 30s
+    networks:
+      default:
+        aliases:
+          - db  # Allow access via both 'plasmic-db' and 'db'
 
   # Plasmic WAB (Web App Builder)
   app:
