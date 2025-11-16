@@ -1,18 +1,27 @@
-// Script to run TypeORM migrations programmatically with proper TypeScript support
-import { createConnection } from "typeorm";
+// Script to run TypeORM migrations programmatically using the application's existing connection management
+import { 
+  ensureDbConnections, 
+  maybeMigrateDatabase, 
+  closeDbConnections
+} from "./src/wab/server/db/DbCon";
+import { DEFAULT_DATABASE_URI } from "./src/wab/server/config";
 
 async function runMigrations() {
   try {
-    // Create connection using the ormconfig.js file
-    console.log("Connecting to database and running migrations...");
-    const connection = await createConnection();
+    console.log("Setting up database connections and running migrations...");
     
-    // Run migrations
-    await connection.runMigrations();
+    // Use the application's existing database connection setup
+    await ensureDbConnections(DEFAULT_DATABASE_URI, {
+      useEnvPassword: true
+    });
+    
+    // Run the migrations using the application's standard method
+    await maybeMigrateDatabase();
+    
     console.log("Migrations completed successfully!");
     
-    // Close connection
-    await connection.close();
+    // Close connections
+    await closeDbConnections();
   } catch (error) {
     console.error("Error running migrations:", error);
     process.exit(1);
