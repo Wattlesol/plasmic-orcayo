@@ -55,17 +55,41 @@ RUN apk add --no-cache \
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S plasmic -u 1001
 
+# Create directory structure to match docker-compose expectations
+RUN mkdir -p /app/platform/wab
+
 WORKDIR /app
+
+# Copy only the required files to /app/platform/wab to match docker-compose command
+COPY --from=builder /app/package.json /app/package.json
+COPY --from=builder /app/yarn.lock /app/yarn.lock
+COPY --from=builder /app/wait-for-it.sh /wait-for-it.sh
+COPY --from=builder /app/test-db-connection.js /app/test-db-connection.js
+COPY --from=builder /app/run-migrations.ts /app/run-migrations.ts
+COPY --from=builder /app/data-source.ts /app/data-source.ts  # Need to create this
+
+# Copy node_modules
+COPY --from=builder /app/node_modules /app/node_modules
+
+# Copy source code to the proper location
+COPY --from=builder /app/src /app/src
+COPY --from=builder /app/public /app/public
+COPY --from=builder /app/assets /app/assets
+COPY --from=builder /app/tsconfig*.json /app/
+COPY --from=builder /app/*.ts /app/
+COPY --from=builder /app/*.js /app/
+COPY --from=builder /app/*.json /app/
+COPY --from=builder /app/*.lock /app/
 
 # Install TypeORM and other required packages globally
 RUN yarn global add typeorm pg reflect-metadata
 
-# Copy wait-for-it.sh script to wait for database
-COPY wait-for-it.sh /wait-for-it.sh
-RUN chmod +x /wait-for-it.sh
+# Create directory structure for platform/wab
+RUN mkdir -p /app/platform/wab && \
+    ln -s /app/* /app/platform/wab/ 2>/dev/null || true
 
-# Copy built application from builder stage
-COPY --from=builder --chown=plasmic:nodejs /app /app
+# Make wait-for-it script executable
+RUN chmod +x /wait-for-it.sh
 
 # Change ownership to non-root user
 USER plasmic
@@ -81,4 +105,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
 ENTRYPOINT ["dumb-init", "--"]
 
 # Default command to start the application with database connection check and migrations
-CMD ["sh", "-c", "/wait-for-it.sh plasmic-db 5432 -- node test-db-connection.js && echo 'Database is ready!' && npx typeorm migration:run -d /app/data-source.ts && yarn backend"]
+CMD ["sh", "-c", "cd /app/platform/wab && ls && yarn install && echo 'Running database connectivity test...' && node test-db-connection.js && echo 'Database is ready!' && yarn run-ts -- run-migrations.ts && echo 'Migrations completed successfully!' && yarn backend"]

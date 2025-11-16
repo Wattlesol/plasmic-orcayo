@@ -39,13 +39,16 @@ services:
         reservations:
           memory: 2G
           cpus: '1'
-    # Run with proper production command
+    # Run with proper production command - include testing steps for db connectivity
     command: >
       sh -c "
-        cd /app/platform/wab && ls && yarn install &&
-        echo 'Running database migrations...' &&
+        cd /app/platform/wab && ls -la && pwd &&
+        echo 'Environment variables:' && env | grep DB ||
+        echo 'Checking dependencies and running database connectivity test...' && 
+        node test-db-connection.js &&
+        echo 'Database is ready, running migrations...' &&
         yarn run-ts -- run-migrations.ts &&
-        echo 'Starting Plasmic in production mode...' &&
+        echo 'Migrations completed, starting Plasmic in production mode...' &&
         yarn backend
       "
 

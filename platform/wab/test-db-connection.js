@@ -4,9 +4,10 @@ const path = require('path');
 console.log('Testing database connection and module availability...\n');
 
 // 1. Check if TypeORM is available
+let typeorm;
 try {
   console.log('Checking for TypeORM installation...');
-  const typeorm = require('typeorm');
+  typeorm = require('typeorm');
   console.log('✓ TypeORM module found:', typeof typeorm);
 } catch (e) {
   console.error('✗ TypeORM module NOT found:', e.message);
@@ -16,69 +17,69 @@ try {
   try {
     execSync('yarn add typeorm pg reflect-metadata', { stdio: 'inherit' });
     console.log('✓ TypeORM installed successfully');
+    typeorm = require('typeorm');
   } catch (installErr) {
     console.error('✗ Failed to install TypeORM:', installErr.message);
     process.exit(1);
   }
 }
 
-// 2. Check if data-source.ts exists
+// 2. Ensure data-source.ts exists with correct content
 const dataSourcePath = path.join(__dirname, 'data-source.ts');
-if (fs.existsSync(dataSourcePath)) {
-  console.log('✓ data-source.ts file exists at:', dataSourcePath);
-} else {
-  console.log('⚠ data-source.ts file does NOT exist at:', dataSourcePath);
-  
-  // Create a temporary data-source.ts for testing
-  const dbConfig = {
-    type: "postgres",
-    host: process.env.WAB_DBHOST || process.env.DB_HOST || "plasmic-db",
-    port: parseInt(process.env.WAB_DBPORT || process.env.DB_PORT || "5432"),
-    username: process.env.WAB_DBUSER || process.env.DB_USER || "wab",
-    password: process.env.WAB_DBPASSWORD || process.env.DB_PASS || "SEKRET",
-    database: process.env.WAB_DBNAME || process.env.DB_NAME || "wab",
-    synchronize: false,
-    dropSchema: false,
-    logging: false,
-    entities: [
-      "src/wab/server/entities/**/*.ts"
-    ],
-    migrations: [
-      "src/wab/server/migrations/**/*.ts"
-    ],
-    subscribers: [
-      "src/wab/server/subscribers/**/*.ts"
-    ]
-  };
-  
-  const dataSourceContent = `
-import { DataSource } from "typeorm";
+const dbConfig = {
+  type: "postgres",
+  host: process.env.WAB_DBHOST || process.env.DB_HOST || process.env.PLASMIC_DBHOST || "plasmic-db",
+  port: parseInt(process.env.WAB_DBPORT || process.env.DB_PORT || process.env.PLASMIC_DBPORT || "5432"),
+  username: process.env.WAB_DBUSER || process.env.DB_USER || process.env.PLASMIC_DBUSER || "wab",
+  password: process.env.WAB_DBPASSWORD || process.env.DB_PASS || process.env.PLASMIC_DBPASSWORD || "SEKRET",
+  database: process.env.WAB_DBNAME || process.env.DB_NAME || process.env.PLASMIC_DBNAME || "wab",
+  synchronize: false,
+  dropSchema: false,
+  logging: false,
+  entities: [
+    "./src/wab/server/entities/**/*.ts",
+    "./dist/src/wab/server/entities/**/*.js"
+  ],
+  migrations: [
+    "./src/wab/server/migrations/**/*.ts", 
+    "./dist/src/wab/server/migrations/**/*.js"
+  ],
+  subscribers: [
+    "./src/wab/server/subscribers/**/*.ts",
+    "./dist/src/wab/server/subscribers/**/*.js"
+  ]
+};
 
-export const AppDataSource = new DataSource(${JSON.stringify(dbConfig, null, 2)});
+const dataSourceContent = `import { DataSource } from "typeorm";
+import "reflect-metadata";
+
+const AppDataSource = new DataSource(${JSON.stringify(dbConfig, null, 2)});
+
+export default AppDataSource;
 `;
-  
-  fs.writeFileSync(path.join(__dirname, 'data-source.ts'), dataSourceContent);
-  console.log('✓ Created temporary data-source.ts file');
-}
+
+// Write the data-source.ts file to ensure it exists
+fs.writeFileSync(dataSourcePath, dataSourceContent);
+console.log('✓ data-source.ts file created/verified');
 
 // 3. Test database connection parameters
 console.log('\nDatabase configuration:');
-console.log('- Host:', process.env.WAB_DBHOST || process.env.DB_HOST || "plasmic-db");
-console.log('- Port:', process.env.WAB_DBPORT || process.env.DB_PORT || 5432);
-console.log('- Username:', process.env.WAB_DBUSER || process.env.DB_USER || "wab");
-console.log('- Database:', process.env.WAB_DBNAME || process.env.DB_NAME || "wab");
+console.log('- Host:', process.env.WAB_DBHOST || process.env.DB_HOST || process.env.PLASMIC_DBHOST || "plasmic-db");
+console.log('- Port:', process.env.WAB_DBPORT || process.env.DB_PORT || process.env.PLASMIC_DBPORT || 5432);
+console.log('- Username:', process.env.WAB_DBUSER || process.env.DB_USER || process.env.PLASMIC_DBUSER || "wab");
+console.log('- Database:', process.env.WAB_DBNAME || process.env.DB_NAME || process.env.PLASMIC_DBNAME || "wab");
 
-// 4. Install pg module if needed for direct testing
+// 4. Try to create a simple connection test
 try {
   console.log('\nChecking for pg module...');
   const { Client } = require('pg');
   
   const client = new Client({
-    host: process.env.WAB_DBHOST || process.env.DB_HOST || "plasmic-db",
-    port: parseInt(process.env.WAB_DBPORT || process.env.DB_PORT || "5432"),
-    user: process.env.WAB_DBUSER || process.env.DB_USER || "wab",
-    password: process.env.WAB_DBPASSWORD || process.env.DB_PASS || "SEKRET",
-    database: process.env.WAB_DBNAME || process.env.DB_NAME || "wab",
+    host: process.env.WAB_DBHOST || process.env.DB_HOST || process.env.PLASMIC_DBHOST || "plasmic-db",
+    port: parseInt(process.env.WAB_DBPORT || process.env.DB_PORT || process.env.PLASMIC_DBPORT || "5432"),
+    user: process.env.WAB_DBUSER || process.env.DB_USER || process.env.PLASMIC_DBUSER || "wab",
+    password: process.env.WAB_DBPASSWORD || process.env.DB_PASS || process.env.PLASMIC_DBPASSWORD || "SEKRET",
+    database: process.env.WAB_DBNAME || process.env.DB_NAME || process.env.PLASMIC_DBNAME || "wab",
   });
 
   console.log('Attempting to connect to database...');
@@ -103,11 +104,11 @@ try {
     
     const { Client } = require('pg');
     const client = new Client({
-      host: process.env.WAB_DBHOST || process.env.DB_HOST || "plasmic-db",
-      port: parseInt(process.env.WAB_DBPORT || process.env.DB_PORT || "5432"),
-      user: process.env.WAB_DBUSER || process.env.DB_USER || "wab",
-      password: process.env.WAB_DBPASSWORD || process.env.DB_PASS || "SEKRET",
-      database: process.env.WAB_DBNAME || process.env.DB_NAME || "wab",
+      host: process.env.WAB_DBHOST || process.env.DB_HOST || process.env.PLASMIC_DBHOST || "plasmic-db",
+      port: parseInt(process.env.WAB_DBPORT || process.env.DB_PORT || process.env.PLASMIC_DBPORT || "5432"),
+      user: process.env.WAB_DBUSER || process.env.DB_USER || process.env.PLASMIC_DBUSER || "wab",
+      password: process.env.WAB_DBPASSWORD || process.env.DB_PASS || process.env.PLASMIC_DBPASSWORD || "SEKRET",
+      database: process.env.WAB_DBNAME || process.env.DB_NAME || process.env.PLASMIC_DBNAME || "wab",
     });
 
     console.log('Attempting to connect to database...');
