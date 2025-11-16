@@ -6,22 +6,6 @@ services:
       dockerfile: ./platform/wab/tools/docker-dev/Dockerfile.dev.aio
     command: # Override the default dockerfile startup command here for debugging purpose
     - |
-      # Wait for MinIO to be ready
-      until curl -s http://plasmic-minio:9000/minio/health/ready; do
-        echo "Waiting for MinIO..."
-        sleep 2
-      done
-      
-      # Configure MinIO client and create bucket
-      mc alias set local http://plasmic-minio:9000 minioadmin minioadmin
-      mc mb local/plasmic-site-assets || true
-      
-      # Set up environment variables for S3
-      export S3_ENDPOINT=http://plasmic-minio:9000
-      export AWS_ACCESS_KEY_ID=minioadmin
-      export AWS_SECRET_ACCESS_KEY=minioadmin
-      export SITE_ASSETS_BUCKET=plasmic-site-assets
-      
       # Continue with original command
       jq '(.host = "plasmic-db") | (.password //= "SEKRET")' ormconfig.json > tmp.json && mv tmp.json ormconfig.json && \
       yarn typeorm migration:run && \
