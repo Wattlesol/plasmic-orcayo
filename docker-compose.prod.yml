@@ -9,13 +9,13 @@ services:
       target: production  # Use the production stage from multi-stage Dockerfile
     restart: always
     environment:
-      - DATABASE_URL=${DATABASE_URL:-postgresql://wab:SEKRET@db:5432/wab}
-      - WAB_DBHOST=${WAB_DBHOST:-db}
-      - WAB_DBNAME=${WAB_DBNAME:-wab}
-      - WAB_DBPASSWORD=${WAB_DBPASSWORD:-SEKRET}
-      - WAB_DBUSER=${WAB_DBUSER:-wab}
-      - WAB_DBPORT=${WAB_DBPORT:-5432}
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      - DATABASE_URL=${DATABASE_URL}
+      - WAB_DBHOST=${WAB_DBHOST}
+      - WAB_DBNAME=${WAB_DBNAME}
+      - WAB_DBPASSWORD=${WAB_DBPASSWORD}
+      - WAB_DBUSER=${WAB_DBUSER}
+      - WAB_DBPORT=${WAB_DBPORT}
+      - REDIS_URL=${REDIS_URL}
       - NODE_ENV=production
       - CMS_INTEGRATION_API_KEY=${CMS_INTEGRATION_API_KEY}
       - SESSION_SECRET=${SESSION_SECRET}
@@ -25,8 +25,6 @@ services:
       - "3003:3003"  # Frontend
       - "3004:3004"  # Backend
       - "3005:3005"  # Host server
-    depends_on:
-      - db  # Production typically connects to external DB
     volumes:
       # For production, we'll use only necessary volumes
       - app_logs:/app/logs

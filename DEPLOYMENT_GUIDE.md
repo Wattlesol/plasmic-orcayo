@@ -180,6 +180,7 @@ The local environment includes:
 The production environment includes:
 - Plasmic application services with resource limits
 - Nginx reverse proxy with SSL support
+- Connects to external database and Redis services
 - Optimized for performance and security
 
 ## Advanced Configuration
@@ -194,7 +195,7 @@ For production SSL setup, mount your SSL certificates to the nginx container at 
 
 ### Redis Configuration
 
-Redis is used for session storage and caching. In production, you may want to use an external Redis service for better performance and reliability.
+Redis is used for session storage and caching. The local environment includes a Redis service, but in production, you should use an external Redis service for better performance and reliability. Configure the connection details in the `REDIS_URL` environment variable.
 
 ## Troubleshooting
 

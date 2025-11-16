@@ -23,7 +23,7 @@ services:
     networks:
       - plasmic-network
 
-  # Redis for session storage and caching (optional but recommended)
+  # Redis for session storage and caching (recommended for development)
   redis:
     image: redis:7-alpine
     restart: always
