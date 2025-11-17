@@ -7,7 +7,9 @@ services:
     command: # Override the default dockerfile startup command here for debugging purpose
     - |
       # Continue with original command
-      jq '(.host = "plasmic-db") | (.password //= "SEKRET")' ormconfig.json > tmp.json && mv tmp.json ormconfig.json && \
+      cd /plasmic && \
+      jq '(.host = "plasmic-db") | (.password //= "SEKRET")' platform/wab/ormconfig.json > /tmp/tmp.json && \
+      mv /tmp/tmp.json platform/wab/ormconfig.json && \
       yarn typeorm migration:run && \
       yarn seed && \
       cd /plasmic && \
