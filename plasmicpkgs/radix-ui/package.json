@@ -2,13 +2,20 @@
   "name": "@plasmicpkgs/radix-ui",
   "version": "0.0.86",
   "description": "Radix UI components for Plasmic",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "module": "dist/index.mjs",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "module": "./dist/index.esm.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.js"
+    }
+ },
   "files": [
     "dist"
   ],
-  "size-limit": [
+ "size-limit": [
     {
       "path": "dist/index.js",
       "limit": "10 KB"
@@ -19,7 +26,9 @@
     }
   ],
   "scripts": {
-    "build": "tsup-node src/index.tsx --dts --format esm,cjs --target es2019",
+    "build": "yarn build:types && yarn build:index",
+    "build:types": "tsc --emitDeclarationOnly --project tsconfig.json",
+    "build:index": "node ../../build.mjs ./src/index.tsx --use-client",
     "test": "TEST_CWD=`pwd` yarn --cwd=../.. test --passWithNoTests",
     "prepublishOnly": "npm run build",
     "size": "size-limit",

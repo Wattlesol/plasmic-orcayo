@@ -130,7 +130,7 @@ export const ContentfulFetcherMeta: ComponentMeta<ContentfulFetcherProps> = {
     },
     contentType: {
       type: "choice",
-      options: (props, ctx) =>
+      options: (_props: any, ctx: any) =>
         ctx?.types?.map((type: any) => ({
           label: type?.name,
           value: type?.sys?.id,
@@ -143,40 +143,40 @@ export const ContentfulFetcherMeta: ComponentMeta<ContentfulFetcherProps> = {
       type: "choice",
       displayName: "Filter field",
       description: "Field (from Collection) to filter by.",
-      options: (props, ctx) => ctx?.fields ?? [],
-      hidden: (props) => !props.contentType,
+      options: (_props: any, ctx: any) => ctx?.fields ?? [],
+      hidden: (props: any) => !props.contentType,
     },
     searchParameter: {
       type: "choice",
       displayName: "Search Parameter",
       description:
         "Search Parameter to filter by (see Contentful Content Delivery API documentation for details).",
-      options: (props, ctx) => ctx?.queryOptions ?? [],
-      hidden: (props) => !props.filterField,
+      options: (_props: any, ctx: any) => ctx?.queryOptions ?? [],
+      hidden: (props: any) => !props.filterField,
     },
     filterValue: {
       type: "string",
       displayName: "Filter value",
       description: "Value to filter by, should be of filter field type.",
-      hidden: (props) => !props.searchParameter,
+      hidden: (props: any) => !props.searchParameter,
     },
     order: {
       type: "choice",
       displayName: "Order",
       description: "Field that the entries should be ordered by.",
-      options: (props, ctx) => [
+      options: (_props: any, ctx: any) => [
         ...(ctx?.fields ?? []),
         "sys.createdAt",
         "sys.updatedAt",
       ],
-      hidden: (props) => !props.contentType,
+      hidden: (props: any) => !props.contentType,
     },
     reverseOrder: {
       type: "boolean",
       displayName: "Reverse order",
       description: "Reverse the order of the entries.",
       defaultValue: false,
-      hidden: (props) => !props.order,
+      hidden: (props: any) => !props.order,
     },
     limit: {
       type: "number",
@@ -541,7 +541,7 @@ export const ContentfulFieldMeta: ComponentMeta<ContentfulFieldProps> = {
   props: {
     objectPath: {
       type: "dataSelector",
-      data: (props, ctx) => ctx?.data ?? {},
+      data: (_props: any, ctx: any) => ctx?.data ?? {},
       displayName: "Field",
       description: "Field to be displayed.",
     },

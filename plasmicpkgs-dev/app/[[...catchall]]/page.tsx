@@ -17,14 +17,25 @@ interface Params {
 }
 
 export async function generateStaticParams(): Promise<Params[]> {
-  const pageModules = await PLASMIC.fetchPages();
-  return pageModules.map((mod) => {
-    const catchall =
-      mod.path === "/" ? undefined : mod.path.substring(1).split("/");
-    return {
-      catchall,
-    };
-  });
+  try {
+    // Check if environment variables are available before attempting to fetch pages
+    if (!process.env.NEXT_PUBLIC_PROJECT_ID || !process.env.NEXT_PUBLIC_PROJECT_TOKEN) {
+      console.warn("Environment variables not available, skipping static generation");
+      return [];
+    }
+    
+    const pageModules = await PLASMIC.fetchPages();
+    return pageModules.map((mod) => {
+      const catchall =
+        mod.path === "/" ? undefined : mod.path.substring(1).split("/");
+      return {
+        catchall,
+      };
+    });
+  } catch (error) {
+    console.warn("Failed to fetch pages for static generation:", error);
+    return [];
+  }
 }
 
 interface LoaderPageProps {
@@ -35,7 +46,7 @@ export async function generateMetadata(
   { params }: LoaderPageProps,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const { pageMeta } = await fetchData((await params).catchall);
+ const { pageMeta } = await fetchData((await params).catchall);
   return {
     ...((await parent) as Metadata),
     ...pageMeta.pageMetadata,

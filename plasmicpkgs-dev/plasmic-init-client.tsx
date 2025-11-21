@@ -2,7 +2,7 @@
 
 import { PLASMIC } from "@/plasmic-init";
 import { registerWithDevMeta } from "@/plasmic-register-dev-meta";
-import { PlasmicRootProvider } from "@plasmicapp/loader-nextjs";
+import { PlasmicRootProvider, type NextJsPlasmicComponentLoader } from "@plasmicapp/loader-nextjs";
 import { registerAll as registerCommerce } from "@plasmicpkgs/commerce";
 import { registerAll as registerShopify } from "@plasmicpkgs/commerce-shopify";
 import { registerFetch } from "@plasmicpkgs/fetch";
@@ -12,14 +12,51 @@ import { registerAll as registerStrapiComponents } from "@plasmicpkgs/plasmic-st
 import { registerStrapi } from "@plasmicpkgs/strapi";
 import React from "react";
 
+// Create specific compatible loader interfaces for each package type
+function makeFunctionLoader(loader: NextJsPlasmicComponentLoader) {
+  return {
+    registerFunction: (fn: any, meta: any) => {
+      // Remove importPath from meta if it exists to make it compatible
+      // with the loader-react version that uses Omit<CustomFunctionMeta, "importPath">
+      const { importPath: _, ...compatibleMeta } = meta;
+      (loader as any).registerFunction(fn, compatibleMeta);
+    }
+  };
+}
+
+function makeComponentLoader(loader: NextJsPlasmicComponentLoader) {
+  return {
+    registerComponent: (component: any, meta: any) => {
+      // Remove importPath from meta if it exists to make it compatible
+      const { importPath: _, ...compatibleMeta } = meta;
+      (loader as any).registerComponent(component, compatibleMeta);
+    }
+ };
+}
+
+function makeComponentAndContextLoader(loader: NextJsPlasmicComponentLoader) {
+  return {
+    registerComponent: (component: any, meta: any) => {
+      // Remove importPath from meta if it exists to make it compatible
+      const { importPath: _, ...compatibleMeta } = meta;
+      (loader as any).registerComponent(component, compatibleMeta);
+    },
+    registerGlobalContext: (context: any, meta: any) => {
+      // Remove importPath from meta if it exists to make it compatible
+      const { importPath: _, ...compatibleMeta } = meta;
+      (loader as any).registerGlobalContext(context, compatibleMeta);
+    }
+ };
+}
+
 function register() {
-  registerFetch(PLASMIC);
-  registerGraphQL(PLASMIC);
-  registerCms(PLASMIC);
-  registerStrapi(PLASMIC);
-  registerStrapiComponents(PLASMIC);
-  registerCommerce(PLASMIC);
-  registerShopify(PLASMIC);
+  registerFetch(makeFunctionLoader(PLASMIC));
+  registerGraphQL(makeFunctionLoader(PLASMIC));
+  registerCms(makeComponentAndContextLoader(PLASMIC));
+  registerStrapi(makeFunctionLoader(PLASMIC));
+  registerStrapiComponents(makeComponentAndContextLoader(PLASMIC));
+  registerCommerce(makeComponentLoader(PLASMIC));
+  registerShopify(makeComponentAndContextLoader(PLASMIC));
 }
 
 const useDevNames = true; // set true to avoid conflicting with production hostless names
@@ -80,3 +117,4 @@ export function PlasmicClientRootProvider(
     <PlasmicRootProvider loader={PLASMIC} {...props}></PlasmicRootProvider>
   );
 }
+

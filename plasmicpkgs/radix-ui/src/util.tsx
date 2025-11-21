@@ -195,7 +195,7 @@ export const animPropTypes = ({
     enterTranslateX: {
       type: "string",
       defaultValueHint: "100%",
-      hidden: (ps) =>
+      hidden: (ps: any) =>
         !getEnterAnimations(ps)?.includes("slide-in-from-right") &&
         !getEnterAnimations(ps)?.includes("slide-in-from-left"),
     },
@@ -203,7 +203,7 @@ export const animPropTypes = ({
       type: "string",
       advanced: true,
       defaultValueHint: "100%",
-      hidden: (ps) =>
+      hidden: (ps: any) =>
         !getExitAnimations(ps)?.includes("slide-out-to-right") &&
         !getExitAnimations(ps)?.includes("slide-out-to-left"),
     },
@@ -211,7 +211,7 @@ export const animPropTypes = ({
       type: "string",
       advanced: true,
       defaultValueHint: "100%",
-      hidden: (ps) =>
+      hidden: (ps: any) =>
         !getEnterAnimations(ps)?.includes("slide-in-from-bottom") &&
         !getEnterAnimations(ps)?.includes("slide-in-from-top"),
     },
@@ -219,7 +219,7 @@ export const animPropTypes = ({
       type: "string",
       advanced: true,
       defaultValueHint: "100%",
-      hidden: (ps) =>
+      hidden: (ps: any) =>
         !getExitAnimations(ps)?.includes("slide-out-to-bottom") &&
         !getExitAnimations(ps)?.includes("slide-out-to-top"),
     },
@@ -227,25 +227,25 @@ export const animPropTypes = ({
       type: "number",
       advanced: true,
       defaultValueHint: 0,
-      hidden: (ps) => !getEnterAnimations(ps)?.includes("fade-in"),
+      hidden: (ps: any) => !getEnterAnimations(ps)?.includes("fade-in"),
     },
     exitOpacity: {
       type: "number",
       advanced: true,
       defaultValueHint: 0,
-      hidden: (ps) => !getExitAnimations(ps)?.includes("fade-out"),
+      hidden: (ps: any) => !getExitAnimations(ps)?.includes("fade-out"),
     },
     enterScale: {
       type: "number",
       advanced: true,
       defaultValueHint: 0.95,
-      hidden: (ps) => !getEnterAnimations(ps)?.includes("zoom-enter"),
+      hidden: (ps: any) => !getEnterAnimations(ps)?.includes("zoom-enter"),
     },
     exitScale: {
       type: "number",
       advanced: true,
       defaultValueHint: 0.95,
-      hidden: (ps) => !getExitAnimations(ps)?.includes("zoom-exit"),
+      hidden: (ps: any) => !getExitAnimations(ps)?.includes("zoom-exit"),
     },
     enterDelay: { type: "number", advanced: true, defaultValueHint: 0 },
     exitDelay: { type: "number", advanced: true, defaultValueHint: 0 },

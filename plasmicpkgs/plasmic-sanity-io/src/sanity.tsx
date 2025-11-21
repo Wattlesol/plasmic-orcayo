@@ -171,50 +171,50 @@ export const sanityFetcherMeta: ComponentMeta<SanityFetcherProps> = {
       defaultValueHint: "*[_type == 'movie']",
       // Hide this if there's no groq, AND there's docType, so we're in
       // "docType" mode
-      hidden: (props) => !props.groq && !!props.docType,
+      hidden: (props: SanityFetcherProps) => !props.groq && !!props.docType,
     },
     docType: {
       type: "choice",
-      options: (props, ctx) => {
+      options: (props: SanityFetcherProps, ctx: any) => {
         return ctx?.docTypes ?? [];
       },
       displayName: "Document type",
       description:
         "Document type to be queried (*[_type == DOC_TYPE] shortcut).",
       // Hide this if groq is specified, as groq always takes precedence
-      hidden: (props) => !!props.groq,
+      hidden: (props: SanityFetcherProps) => !!props.groq,
     },
     filterField: {
       type: "choice",
       displayName: "Filter field",
       description: "Field (from Collection) to filter by",
-      options: (props, ctx) => ctx?.sanityFields ?? [],
+      options: (props: SanityFetcherProps, ctx: any) => ctx?.sanityFields ?? [],
       // Hide this if there's groq (so we're just using groq), or if there's
       // no docType selected yet
-      hidden: (props) => !!props.groq || !props.docType,
+      hidden: (props: SanityFetcherProps) => !!props.groq || !props.docType,
     },
     filterParameter: {
       type: "choice",
       displayName: "Filter Operation",
       description:
         "Filter Option to filter by. Read more (https://www.sanity.io/docs/groq-operators#3b7211e976f6)",
-      options: (props, ctx) => ctx?.queryOptions ?? [],
+      options: (props: SanityFetcherProps, ctx: any) => ctx?.queryOptions ?? [],
       // Hide if in groq mode, or if no filter field is selected yet
-      hidden: (props) => !!props.groq || !props.filterField,
+      hidden: (props: SanityFetcherProps) => !!props.groq || !props.filterField,
     },
     filterValue: {
       type: "string",
       displayName: "Filter value",
       description: "Value to filter by, should be of filter field type",
       // Hide if in groq mode, or if no filter field is selected yet
-      hidden: (props) => !!props.groq || !props.filterField,
+      hidden: (props: SanityFetcherProps) => !!props.groq || !props.filterField,
     },
     limit: {
       type: "string",
       displayName: "Limit",
       description: "Limit",
       // Hide if in groq mode
-      hidden: (props) => !!props.groq || !props.docType,
+      hidden: (props: SanityFetcherProps) => !!props.groq || !props.docType,
     },
     noAutoRepeat: {
       type: "boolean",
@@ -413,7 +413,7 @@ export function SanityFetcher({
     return <div className={className}>Loading...</div>;
   }
 
-  let sanityFields = unfilteredData.map((item) => {
+  let sanityFields = unfilteredData.map((item: any) => {
     const fields = Object.keys(item).filter((field) => {
       const value = get(item, field);
       return (
@@ -484,7 +484,7 @@ export function SanityFetcher({
   const imageBuilder = imageUrlBuilder(sanity);
   const repElements = noAutoRepeat
     ? children
-    : resultData.map((item, index) => {
+    : resultData.map((item: any, index: number) => {
         Object.keys(item).forEach((field) => {
           if (item[field] != null && item[field]._type === "image") {
             item[field].imgUrl = imageBuilder
@@ -547,7 +547,7 @@ export const sanityFieldMeta: ComponentMeta<SanityFieldProps> = {
     },
     field: {
       type: "choice",
-      options: (props, ctx) => {
+      options: (props: SanityFieldProps, ctx: any) => {
         return ctx?.fields ?? [];
       },
       displayName: "Field",

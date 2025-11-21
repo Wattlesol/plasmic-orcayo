@@ -126,7 +126,7 @@ export const ContentStackFetcherMeta: ComponentMeta<ContentStackFetcherProps> = 
     },
     contentType: {
       type: "choice",
-      options: (props, ctx) =>
+      options: (_props, ctx) =>
         ctx?.types?.map((type: any) => ({
           label: type?.title,
           value: type?.uid,
@@ -138,15 +138,15 @@ export const ContentStackFetcherMeta: ComponentMeta<ContentStackFetcherProps> = 
       type: "choice",
       displayName: "Filter field",
       description: "Field (from Collection) to filter by",
-      options: (props, ctx) => ctx?.filterFields ?? [],
-      hidden: (props, ctx) => !props.contentType,
+      options: (_props, ctx) => ctx?.filterFields ?? [],
+      hidden: (props, _ctx) => !props.contentType,
     },
     queryOperator: {
       type: "choice",
       displayName: "Query Operator",
       description: "Query Operator filter by",
-      options: (props, ctx) => ctx?.queryOptions ?? [],
-      hidden: (props, ctx) => !props.filterField,
+      options: (_props, ctx) => ctx?.queryOptions ?? [],
+      hidden: (props, _ctx) => !props.filterField,
     },
     filterValue: {
       type: "string",
@@ -430,11 +430,11 @@ export function ContentStackFetcher({
       return <div>No published entry found </div>;
     }
 
-    const entries = Object.values(filteredData).flatMap((model: any) =>
+    const filteredEntries = Object.values(filteredData).flatMap((model: any) =>
       Array.isArray(model) ? model : [model]
     );
 
-    renderedData = entries?.map((item: any, index: number) => (
+    renderedData = filteredEntries?.map((item: any, index: number) => (
       <DataProvider
         key={item._id}
         name={"contentstackItem"}
@@ -447,10 +447,10 @@ export function ContentStackFetcher({
       </DataProvider>
     ));
   } else {
-    const entries = Object.values(entriesData).flatMap((model: any) =>
+    const originalEntries = Object.values(entriesData).flatMap((model: any) =>
       Array.isArray(model) ? model : [model]
     );
-    renderedData = entries?.map((item: any, index: number) => (
+    renderedData = originalEntries?.map((item: any, index: number) => (
       <DataProvider
         key={item._id}
         name={"contentstackItem"}
@@ -498,7 +498,7 @@ export const ContentStackFieldMeta: ComponentMeta<ContentStackFieldProps> = {
   props: {
     objectPath: {
       type: "dataSelector",
-      data: (props, ctx) => ctx?.data ?? {},
+      data: (_props, ctx) => ctx?.data ?? {},
       displayName: "Field",
       description: "Field to be displayed.",
     },

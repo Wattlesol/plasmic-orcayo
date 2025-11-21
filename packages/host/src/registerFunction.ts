@@ -72,7 +72,7 @@ export interface CustomFunctionMeta<F extends (...args: any[]) => any> {
    * The result of the fetcher will be used as the context of the function
    * in studio and should return a promise.
    */
-  fnContext?: (...args: Partial<Parameters<F>>) => {
+  fnContext?: (...args: Parameters<F>) => {
     dataKey: string;
     fetcher: () => Promise<any>;
   };

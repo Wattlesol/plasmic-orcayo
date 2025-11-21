@@ -1,6 +1,7 @@
 import { initPlasmicLoader } from "@plasmicapp/loader-nextjs/react-server-conditional";
 import * as NextNavigation from "next/navigation";
 
+// The environment variables should be available through Next.js config
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
 const projectToken = process.env.NEXT_PUBLIC_PROJECT_TOKEN;
 
@@ -19,7 +20,7 @@ export const PLASMIC = initPlasmicLoader({
 
   // By default Plasmic will use the last published version of your project.
   // For development, you can set preview to true, which will use the unpublished
-  // project, allowing you to see your designs without publishing.  Please
+ // project, allowing you to see your designs without publishing. Please
   // only use this for development, as this is significantly slower.
   preview: true,
 });

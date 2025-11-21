@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev-inspect": "NODE_OPTIONS='--inspect' next dev"
+    "dev-inspect": "NODE_OPTIONS='--inspect' next dev",
+    "build": "next build"
   },
   "dependencies": {
     "@plasmicapp/loader-nextjs": "1.0.443",
