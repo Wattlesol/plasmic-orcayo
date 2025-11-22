@@ -3,7 +3,8 @@ services:
   plasmic-wab:
     build:
       context: .
-      dockerfile: ./platform/wab/tools/docker-dev/Dockerfile.dev.aio
+      # dockerfile: ./platform/wab/tools/docker-dev/Dockerfile.dev.aio
+      dockerfile: ./Dockerfile.prod 
     command: # Override the default dockerfile startup command here for debugging purpose
     - |
       # Continue with original command

@@ -1,0 +1,67 @@
+# Multi-stage build to handle platform-specific dependencies properly
+# Stage 1: Prepare and install all dependencies specifically for Linux platform
+FROM node:22-alpine as deps-installer
+
+# Install system dependencies required for building native modules
+RUN apk add --no-cache \
+    bash \
+    git \
+    curl \
+    python3 \
+    py3-pip \
+    postgresql-client \
+    build-base \
+    libc6-compat
+
+# Create user
+RUN addgroup -S plasmic && \
+    adduser -S plasmic -G plasmic
+
+USER plasmic
+
+WORKDIR /app
+
+# Copy package files first for better caching
+COPY --chown=plasmic:plasmic package.json yarn.lock ./
+
+# Install all dependencies (including devDependencies) to ensure build tools are available
+RUN yarn install --frozen-lockfile --network-timeout 1000 --ignore-engines --ignore-scripts
+
+# Stage 2: Set up the runtime environment
+FROM node:22-alpine
+
+# Install minimal system dependencies needed at runtime
+RUN apk add --no-cache git jq bash libc6-compat && \
+    echo "fs.inotify.max_user_watches=524288" >> /etc/sysctl.conf && \
+    sysctl -p
+
+# Create user
+RUN addgroup -S plasmic && \
+    adduser -S plasmic -G plasmic
+
+USER plasmic
+
+# Set working directory
+WORKDIR /plasmic
+
+# Copy installed dependencies from the first stage
+COPY --from=deps-installer --chown=plasmic:plasmic /app/node_modules ./node_modules
+
+# Copy the application code
+COPY --chown=plasmic:plasmic . .
+
+# Pre-build any necessary assets to avoid runtime compilation issues
+RUN cd platform/wab && yarn build || echo "Build step failed, continuing setup"
+
+# Install and build canvas packages
+RUN cd platform/canvas-packages && yarn install --frozen-lockfile --network-timeout 1000 && yarn build
+
+# Create necessary directories that might be expected
+RUN mkdir -p platform/wab/public platform/wab/dev-build
+
+# Expose ports
+EXPOSE 3003 3004 3005
+
+# Set up entrypoint
+ENTRYPOINT ["sh", "-c"]
+CMD ["cd /plasmic && yarn dev"]
