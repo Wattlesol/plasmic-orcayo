@@ -25,7 +25,8 @@ WORKDIR /app
 COPY --chown=plasmic:plasmic package.json yarn.lock ./
 
 # Install all dependencies (including devDependencies) to ensure build tools are available
-RUN yarn install --frozen-lockfile --network-timeout 1000 --ignore-engines --ignore-scripts
+RUN yarn config set network-timeout 120000 && \
+    yarn install --frozen-lockfile --network-timeout 120000 --ignore-engines --ignore-scripts
 
 # Stage 2: Set up the runtime environment
 FROM node:22-alpine
@@ -50,11 +51,11 @@ COPY --from=deps-installer --chown=plasmic:plasmic /app/node_modules ./node_modu
 # Copy the application code
 COPY --chown=plasmic:plasmic . .
 
-# Pre-build any necessary assets to avoid runtime compilation issues
-RUN cd platform/wab && yarn build || echo "Build step failed, continuing setup"
+# Pre-build platform/wab first
+RUN cd platform/wab && yarn config set network-timeout 120000 && yarn install --frozen-lockfile --network-timeout 120000 --ignore-engines --ignore-scripts && yarn build || echo "Build step failed, continuing setup"
 
 # Install and build canvas packages
-RUN cd platform/canvas-packages && yarn install --frozen-lockfile --network-timeout 1000 && yarn build
+RUN cd platform/canvas-packages && yarn config set network-timeout 120000 && yarn install --frozen-lockfile --network-timeout 120000 --ignore-engines --ignore-scripts && yarn build
 
 # Create necessary directories that might be expected
 RUN mkdir -p platform/wab/public platform/wab/dev-build

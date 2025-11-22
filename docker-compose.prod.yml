@@ -1,50 +1,52 @@
 version: '3.8'
 
 services:
-  # Plasmic application service (production)
+  # Plasmic application service (production) - connects to remote database
   app:
     build:
       context: .
-      dockerfile: platform/wab/Dockerfile
-      target: production  # Use the production stage from multi-stage Dockerfile
+      dockerfile: ./Dockerfile.prod
+      target: production
+    platform: linux/amd64  # Specify AMD64 platform for production Intel Xeon
     restart: always
     environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - WAB_DBHOST=${WAB_DBHOST}
-      - WAB_DBNAME=${WAB_DBNAME}
-      - WAB_DBPASSWORD=${WAB_DBPASSWORD}
-      - WAB_DBUSER=${WAB_DBUSER}
-      - WAB_DBPORT=${WAB_DBPORT}
-      - REDIS_URL=${REDIS_URL}
+      - DATABASE_URL=postgresql://wab:SEKRET@142.44.136.233:5433/wab
+      - WAB_DBHOST=142.44.136.233
+      - WAB_DBNAME=wab
+      - WAB_DBPASSWORD=SEKRET
+      - WAB_DBUSER=wab
+      - WAB_DBPORT=5433
+      - REDIS_URL=${REDIS_URL:-redis://localhost:6379} # Use external Redis if available
       - NODE_ENV=production
       - CMS_INTEGRATION_API_KEY=${CMS_INTEGRATION_API_KEY}
       - SESSION_SECRET=${SESSION_SECRET}
       - PUBLIC_URL=${PUBLIC_URL:-http://localhost}
       - PLASMIC_DEPLOYMENT_ENV=production
     ports:
-      - "3003:3003"  # Frontend
-      - "3004:3004"  # Backend
-      - "3005:3005"  # Host server
+      - "3003:3003" # Frontend
+      - "3004:3004" # Backend
+      - "3005:3005" # Host server
     volumes:
       # For production, we'll use only necessary volumes
       - app_logs:/app/logs
+      - app_uploads:/app/uploads
     networks:
       - plasmic-network
     # Set resource limits for production
     deploy:
       resources:
         limits:
-          memory: 16G
-          cpus: '3'
+          memory: 8G
+          cpus: '2'
         reservations:
-          memory: 2G
-          cpus: '1'
-    # Run with proper production command - include testing steps for db connectivity
+          memory: 1G
+          cpus: '0.5'
+    # Run with proper production command - connect to remote database
     command: >
       sh -c "
-        cd /app/platform/wab && ls -la && pwd &&
-        echo 'Environment variables:' && env | grep DB ||
-        echo 'Checking dependencies and running database connectivity test...' && 
+        cd /plasmic/platform/wab && 
+        echo 'Environment variables:' && env | grep DB &&
+        echo 'Checking database connectivity...' && 
         node test-db-connection.js &&
         echo 'Database is ready, running migrations...' &&
         yarn run-ts -- run-migrations.ts &&
@@ -54,6 +56,7 @@ services:
 
 volumes:
   app_logs:
+  app_uploads:
 
 networks:
   plasmic-network:

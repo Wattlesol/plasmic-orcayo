@@ -1,25 +1,29 @@
+version: '3.8'
+
 services:
-  # Plasmic WAB (Web App Builder)
+  # Plasmic WAB (Web App Builder) - Local Development
   plasmic-wab:
     build:
       context: .
-      # dockerfile: ./platform/wab/tools/docker-dev/Dockerfile.dev.aio
-      dockerfile: ./Dockerfile.prod 
-    command: # Override the default dockerfile startup command here for debugging purpose
-    - |
-      # Continue with original command
-      cd /plasmic && \
-      jq '(.host = "plasmic-db") | (.password //= "SEKRET")' platform/wab/ormconfig.json > /tmp/tmp.json && \
-      mv /tmp/tmp.json platform/wab/ormconfig.json && \
-      yarn typeorm migration:run && \
-      yarn seed && \
-      cd /plasmic && \
-      yarn dev
+      dockerfile: ./Dockerfile.prod
+      target: production  # Use production stage as base but override for development
+    platform: linux/arm64  # Specify ARM64 platform for M1 Mac
+    command: |
+      sh -c "
+        cd /plasmic/platform/wab &&
+        # Set up database connection
+        jq '(.host = \"plasmic-db\") | (.password //= \"SEKRET\")' ormconfig.json > /tmp/tmp.json &&
+        mv /tmp/tmp.json ormconfig.json &&
+        # Run migrations
+        yarn typeorm migration:run &&
+        # Start development server
+        cd /plasmic &&
+        yarn dev
+      "
     volumes:
-      # 1. Mount your local source code into the container
+      # Mount your local source code into the container for live development
       - .:/plasmic
-      # 2. Use named volumes to preserve built container files from being overwritten by unbuilt local code
-      # --- Node Modules (Existing) ---
+      # Use named volumes to preserve node_modules and build artifacts
       - plasmic_node_modules:/plasmic/node_modules
       - plasmic_wab_node_modules:/plasmic/platform/wab/node_modules
       - plasmic_sub_node_modules:/plasmic/platform/sub/node_modules
@@ -28,21 +32,19 @@ services:
       - plasmic_react_web_bundle_node_modules:/plasmic/platform/react-web-bundle/node_modules
       - plasmic_loader_bundle_env_node_modules:/plasmic/platform/loader-bundle-env/node_modules
       - plasmic_loader_html_hydrate_node_modules:/plasmic/platform/loader-html-hydrate/node_modules
-
-      # --- Generated files ---
+      # Preserve built files
       - plasmic_public:/plasmic/platform/wab/public
       - plasmic_wab_client:/plasmic/platform/wab/src/wab/client
       - plasmic_wab_gen:/plasmic/platform/wab/src/wab/gen
       - plasmic_wab_shared_model:/plasmic/platform/wab/src/wab/shared/model
       - plasmic_generated_styles:/plasmic/platform/wab/src/wab/styles
-
-      # --- Build Caches ---
+      # Playwright cache
       - plasmic_playwright_cache:/home/plasmic/.cache/ms-playwright
     ports:
-      - "3003:3003"
-      - "3004:3004"
-      - "3005:3005"
-      - "9229:9229"
+      - "3003:3003"  # Frontend
+      - "3004:3004"  # Backend
+      - "3005:3005"  # Host server
+      - "9229:9229"  # Debugging
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - WAB_DBHOST=${WAB_DBHOST}
@@ -51,15 +53,43 @@ services:
       - WAB_DBUSER=${WAB_DBUSER}
       - WAB_DBPORT=${WAB_DBPORT}
       - REDIS_URL=${REDIS_URL}
-      - NODE_ENV=production
+      - NODE_ENV=development
       - CMS_INTEGRATION_API_KEY=${CMS_INTEGRATION_API_KEY}
       - SESSION_SECRET=${SESSION_SECRET}
-      - PUBLIC_URL=${PUBLIC_URL:-http://localhost}
-      - PLASMIC_DEPLOYMENT_ENV=production
-      # This environment variable makes file watching more reliable.
+      - PUBLIC_URL=${PUBLIC_URL:-http://localhost:3003}
+      - PLASMIC_DEPLOYMENT_ENV=development
+      # File watching for M1 Mac
       - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # For connecting to external services
     tty: true
     stdin_open: true
+    # Increase resources for development
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          memory: 2G
+
+  # Database service
+  plasmic-db:
+    image: postgres:13
+    platform: linux/arm64  # ARM64 compatibility
+    restart: always
+    environment:
+      POSTGRES_DB: ${WAB_DBNAME:-wab}
+      POSTGRES_USER: ${WAB_DBUSER:-wab}
+      POSTGRES_PASSWORD: ${WAB_DBPASSWORD:-SEKRET}
+    ports:
+      - "543:5432"  # Expose for local access
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    command: >
+      postgres
+      -c max_connections=200
+      -c shared_buffers=1GB
 
 volumes:
   postgres_data:
