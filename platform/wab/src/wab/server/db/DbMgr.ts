@@ -290,6 +290,7 @@ export const updatableUserFields = [
   "lastName",
   "userId",
   "tenantId",
+  "owningTeamId",
   "role",
   "source",
   "surveyResponse",
@@ -1945,7 +1946,9 @@ export class DbMgr implements MigrationDbMgr {
     ...fields
   }: { id: UserId } & Partial<UpdatableUserFields>) {
     this.checkUserIdIsSelf(id);
+
     fields = _.pick(fields, ...updatableUserFields);
+    
     const user = await this.getUserById(id);
     mergeSane(user, this.stampUpdate(), fields);
     return await this.entMgr.save(user);

@@ -408,7 +408,7 @@
 
                     // Simulate the API call that would happen in a real implementation
                     // Uncomment this section when you have your backend API set up:
-                    const response = await fetch('http://localhost:3004/api/v1/cms-integration/generate-token', {
+                    const response = await fetch('http://localhost:3004/api/v1/cms-integration/generate-workspace-token', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -434,16 +434,16 @@
                     tokenText.textContent = data.token;
                     tokenDisplay.classList.add('active');
 
-                    // Load the projects list iframe with the generated token and workspace ID
-                    loadProjectsList(data.token, workspaceIdInput.value.trim());
+                    // Load the workspace iframe with the generated token and workspace ID
+                    loadWorkspace(data.token, data.workspace?.id || workspaceIdInput.value.trim());
 
-                    showStatus('Successfully authenticated! Loading your projects...', 'success');
+                    showStatus('Successfully authenticated! Loading your workspace...', 'success');
                     /*
                     // For fallback, uncomment this section if the API is not working
-                    // Load the projects list with demo token and workspace ID
-                    loadProjectsList(demoToken, workspaceIdInput.value.trim());
+                    // Load the workspace with demo token and workspace ID
+                    loadWorkspace(demoToken, workspaceIdInput.value.trim());
 
-                    showStatus('Successfully authenticated! Loading your projects...', 'success');
+                    showStatus('Successfully authenticated! Loading your workspace...', 'success');
                     */
 
                 } catch (error) {
@@ -471,6 +471,28 @@
 
                 // Log for debugging
                 console.log(`Loading projects list with URL: ${projectsUrl}`);
+            }
+
+            function loadWorkspace(token, workspaceId = null) {
+                // Set the iframe source to the Plasmic workspace page with the token
+                let workspaceUrl;
+                if (workspaceId) {
+                    workspaceUrl = `http://localhost:3003/workspaces/${workspaceId}?token=${token}`;
+                } else {
+                    // If no specific workspace ID provided, just go to the workspaces listing page
+                    workspaceUrl = `http://localhost:3003/workspaces?token=${token}`;
+                }
+
+                projectsIframe.src = workspaceUrl;
+
+                // Show the projects container (which now contains the workspace)
+                projectsContainer.classList.add('active');
+
+                // Hide the builder container since we're showing workspace
+                builderContainer.classList.remove('active');
+
+                // Log for debugging
+                console.log(`Loading workspace with URL: ${workspaceUrl}`);
             }
 
             function openProjectInBuilder(projectId, token) {
@@ -603,10 +625,22 @@
                 const currentToken = tokenElement.textContent || demoToken;
                 
                 if (currentToken && currentToken !== '') {
-                    loadProjectsList(currentToken, document.getElementById('workspaceId')?.value.trim());
-                    showStatus('Projects page reloaded. Look for "New Project" button in the embedded view.', 'success');
+                    // Load the workspace projects tab
+                    const workspaceIdValue = document.getElementById('workspaceId')?.value.trim();
+                    let workspaceUrl;
+                    if (workspaceIdValue) {
+                        workspaceUrl = `http://localhost:3003/workspaces/${workspaceIdValue}?token=${currentToken}#tab=projects`;
+                    } else {
+                        workspaceUrl = `http://localhost:3003/workspaces?token=${currentToken}#tab=projects`;
+                    }
+                    
+                    projectsIframe.src = workspaceUrl;
+                    projectsContainer.classList.add('active');
+                    builderContainer.classList.remove('active');
+                    
+                    showStatus('Loading workspace projects...', 'success');
                 } else {
-                    showStatus('Please authenticate first to view projects.', 'error');
+                    showStatus('Please authenticate first to view workspace.', 'error');
                 }
             });
             
@@ -645,13 +679,22 @@
                 const currentToken = tokenElement.textContent || demoToken;
                 
                 if (currentToken && currentToken !== '') {
-                    // Show the projects iframe if not already visible
-                    if (!projectsContainer.classList.contains('active')) {
-                        loadProjectsList(currentToken, document.getElementById('workspaceId')?.value.trim());
+                    // Load the workspace projects tab for management
+                    const workspaceIdValue = document.getElementById('workspaceId')?.value.trim();
+                    let workspaceUrl;
+                    if (workspaceIdValue) {
+                        workspaceUrl = `http://localhost:3003/workspaces/${workspaceIdValue}?token=${currentToken}#tab=projects`;
+                    } else {
+                        workspaceUrl = `http://localhost:3003/workspaces?token=${currentToken}#tab=projects`;
                     }
-                    showStatus('Projects list is now visible. Manage your projects in the embedded view below.', 'success');
+                    
+                    projectsIframe.src = workspaceUrl;
+                    projectsContainer.classList.add('active');
+                    builderContainer.classList.remove('active');
+                    
+                    showStatus('Loading workspace projects management...', 'success');
                 } else {
-                    showStatus('Please authenticate first to view projects.', 'error');
+                    showStatus('Please authenticate first to access workspace.', 'error');
                 }
             });
         });
